@@ -9,8 +9,7 @@ import fastf1.plotting
 
 def show_podium(screen):
     global year_text, active_box, error_message, dropdown, button
-    bg_image_path = 'assets/bg.jpg'
-    logo_image = pygame.image.load("assets/f1.png")
+    logo_image = pygame.image.load(logo_image_path)
     logo_image = pygame.transform.scale(logo_image, (300, 100))
     bg_image = pygame.image.load(bg_image_path).convert()
     bg_image = pygame.transform.scale(bg_image, (WIDTH, HEIGHT))
@@ -157,8 +156,8 @@ def position():
         plt.tight_layout()
         plt.show()
 
-    except Exception as e:
-        print(f"Error loading session data: {e}")
+    except Exception as e: # Debugging
+        print(f"Error: {e}")
 
 # Call the show_podium function to start the program
 # Make sure to initialize Pygame and set up the screen before calling this function
