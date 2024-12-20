@@ -4,6 +4,7 @@ import fastf1 as ff1
 from time import sleep
 from datetime import datetime
 
+# Creating cache directory if it doesn't exist
 permission = True
 try:
     os.mkdir("cache")
@@ -22,6 +23,13 @@ if permission:
 # Variables
 WIDTH = 1280
 HEIGHT = 720
+logo_width = 500
+logo_height = 100
+
+bg_image_path = "assets/bg.jpg"
+# icon_path = "assets/fw.png"
+logo_image_path = "assets/formulawise.png"
+
 RED = (255, 0, 0)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
