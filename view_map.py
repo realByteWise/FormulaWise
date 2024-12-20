@@ -13,71 +13,73 @@ def rotate(xy, *, angle):
     return np.matmul(xy, rot_mat)
 
 def plot_map():
-    session = ff1.get_session(int(year_text), dropdown.getSelected(), 'R')
-    session.load()
+    try:
+        session = ff1.get_session(int(year_text), dropdown.getSelected(), 'R')
+        session.load()
 
-    lap = session.laps.pick_fastest()
-    pos = lap.get_pos_data()
+        lap = session.laps.pick_fastest()
+        pos = lap.get_pos_data()
 
-    circuit_info = session.get_circuit_info()
-    
-    plt.style.use('dark_background')
-    
-    # Get an array of shape [n, 2] where n is the number of points and the second
-    # axis is x and y.
-    track = pos.loc[:, ('X', 'Y')].to_numpy()
+        circuit_info = session.get_circuit_info()
 
-    # Convert the rotation angle from degrees to radian.
-    track_angle = circuit_info.rotation / 180 * np.pi
+        plt.style.use('dark_background')
 
-    # Rotate and plot the track map.
-    rotated_track = rotate(track, angle=track_angle)
-    plt.plot(rotated_track[:, 0], rotated_track[:, 1])
-    
-    offset_vector = [500, 0]  # offset length is chosen arbitrarily to 'look good'
+        # Get an array of shape [n, 2] where n is the number of points and the second
+        # axis is x and y.
+        track = pos.loc[:, ('X', 'Y')].to_numpy()
 
-    # Iterate over all corners.
-    for _, corner in circuit_info.corners.iterrows():
-        # Create a string from corner number and letter
-        txt = f"{corner['Number']}{corner['Letter']}"
+        # Convert the rotation angle from degrees to radian.
+        track_angle = circuit_info.rotation / 180 * np.pi
 
-        # Convert the angle from degrees to radian.
-        offset_angle = corner['Angle'] / 180 * np.pi
+        # Rotate and plot the track map.
+        rotated_track = rotate(track, angle=track_angle)
+        plt.plot(rotated_track[:, 0], rotated_track[:, 1])
 
-        # Rotate the offset vector so that it points sideways from the track.
-        offset_x, offset_y = rotate(offset_vector, angle=offset_angle)
+        offset_vector = [500, 0]  # offset length is chosen arbitrarily to 'look good'
 
-        # Add the offset to the position of the corner
-        text_x = corner['X'] + offset_x
-        text_y = corner['Y'] + offset_y
+        # Iterate over all corners.
+        for _, corner in circuit_info.corners.iterrows():
+            # Create a string from corner number and letter
+            txt = f"{corner['Number']}{corner['Letter']}"
 
-        # Rotate the text position equivalently to the rest of the track map
-        text_x, text_y = rotate([text_x, text_y], angle=track_angle)
+            # Convert the angle from degrees to radian.
+            offset_angle = corner['Angle'] / 180 * np.pi
 
-        # Rotate the center of the corner equivalently to the rest of the track map
-        track_x, track_y = rotate([corner['X'], corner['Y']], angle=track_angle)
+            # Rotate the offset vector so that it points sideways from the track.
+            offset_x, offset_y = rotate(offset_vector, angle=offset_angle)
 
-        # Draw a circle next to the track.
-        plt.scatter(text_x, text_y, color='red', s=140)
+            # Add the offset to the position of the corner
+            text_x = corner['X'] + offset_x
+            text_y = corner['Y'] + offset_y
 
-        # Draw a line from the track to this circle.
-        plt.plot([track_x, text_x], [track_y, text_y], color='red')
+            # Rotate the text position equivalently to the rest of the track map
+            text_x, text_y = rotate([text_x, text_y], angle=track_angle)
 
-        # Finally, print the corner number inside the circle.
-        plt.text(text_x, text_y, txt,
-                 va='center_baseline', ha='center', size='small', color='black')
-    
-    plt.title(session.event['Location'])
-    plt.xticks([])
-    plt.yticks([])
-    plt.axis('equal')
-    plt.show()
+            # Rotate the center of the corner equivalently to the rest of the track map
+            track_x, track_y = rotate([corner['X'], corner['Y']], angle=track_angle)
+
+            # Draw a circle next to the track.
+            plt.scatter(text_x, text_y, color='red', s=140)
+
+            # Draw a line from the track to this circle.
+            plt.plot([track_x, text_x], [track_y, text_y], color='red')
+
+            # Finally, print the corner number inside the circle.
+            plt.text(text_x, text_y, txt,
+                     va='center_baseline', ha='center', size='small', color='black')
+
+        plt.title(session.event['Location'])
+        plt.xticks([])
+        plt.yticks([])
+        plt.axis('equal')
+        plt.show()
+    except Exception as e: # Debugging
+        print(f"Error: {e}")
 
 def view_map(screen):
     global year_text, active_box, error_message, dropdown
-    bg_image_path = 'assets/bg.jpg'
-    logo_image = pygame.image.load("assets/f1.png")
-    logo_image = pygame.transform.scale(logo_image, (300, 100))
+    logo_image = pygame.image.load(logo_image_path)
+    logo_image = pygame.transform.scale(logo_image, (logo_width, logo_height))
     bg_image = pygame.image.load(bg_image_path).convert()
     bg_image = pygame.transform.scale(bg_image, (WIDTH, HEIGHT))
     input_width, input_height = 300, 40
