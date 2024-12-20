@@ -7,8 +7,7 @@ from matplotlib.collections import LineCollection
 
 def heatmaps(screen):
     global driver_text, year_text, week_text, active_box, error_message
-    bg_image_path = 'assets/bg.jpg'
-    bg_image = pygame.image.load(bg_image_path).convert()  
+    bg_image = pygame.image.load(bg_image_path).convert()
     input_width, input_height = 300, 40
     driver_box = pygame.Rect(WIDTH // 2 - input_width // 2, HEIGHT // 2 - 100, input_width, input_height)
     year_box = pygame.Rect(WIDTH // 2 - input_width // 2, HEIGHT // 2 - 30, input_width, input_height)
@@ -108,7 +107,7 @@ def plot_heatmap(driver, year, week):
         normlegend = mpl.colors.Normalize(vmin=color.min(), vmax=color.max())
         mpl.colorbar.ColorbarBase(cbaxes, norm=normlegend, cmap=mpl.cm.plasma, orientation="horizontal")
         plt.show()
-    except Exception as e:
+    except Exception as e: # Debugging
         print(f"Error: {e}")
         return False
     return True
