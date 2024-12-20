@@ -11,8 +11,7 @@ def redirect():
 
 def buy_ticket(screen):
     global year_text, active_box, error_message, dropdown
-    bg_image_path = 'assets/bg.jpg'
-    logo_image = pygame.image.load("assets/f1.png")
+    logo_image = pygame.image.load(logo_image_path)
     logo_image = pygame.transform.scale(logo_image, (300, 100))
     bg_image = pygame.image.load(bg_image_path).convert()
     bg_image = pygame.transform.scale(bg_image, (WIDTH, HEIGHT))
@@ -48,14 +47,14 @@ def buy_ticket(screen):
                                 choices=countries, fontSize=25,
                                 borderRadius=5, colour=pygame.Color('gray'), values=countries, direction='down', textHAlign='centre', textColor=pygame.Color('Red')
                             )
-                            
+
                             button = Button(
                                 screen, 890, 200, 150, 50, text='Buy Tickets',
                                 margin=20, inactiveColour=(255, 0, 0), pressedColour=(0, 255, 0),
                                 font=pygame.font.SysFont('arial', 25, bold=True), radius=5,
                                 textVAlign='centre', onClick=redirect
                             )
-                            
+
                         except Exception as e:
                             error_message = "Error fetching data. Please try again."
                 elif return_button.collidepoint(event.pos):
