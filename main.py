@@ -8,14 +8,16 @@ from race_winner import show_podium
 show_main_menu_buttons = True
 pygame.init()
 pygame.mixer.init()
-pygame.mixer.music.load(r'assets\Gas.mp3')
+pygame.mixer.music.load('assets/gas.mp3')
 pygame.mixer.music.play(-1)
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("FormulaWise")
-bg_image = pygame.image.load("assets/bg.jpg")
+icon_image = pygame.image.load("assets/fw.png")
+pygame.display.set_icon(icon_image)
+bg_image = pygame.image.load(bg_image_path)
 bg_image = pygame.transform.scale(bg_image, (WIDTH, HEIGHT))
-logo_image = pygame.image.load("assets/f1.png")
-logo_image = pygame.transform.scale(logo_image, (300, 100))
+logo_image = pygame.image.load(logo_image_path)
+logo_image = pygame.transform.scale(logo_image, (logo_width, logo_height))
 font = pygame.font.Font(pygame.font.match_font('Palatino'), 24)
 input_width, input_height = 300, 40
 username_box = pygame.Rect(WIDTH // 2 - input_width // 2, HEIGHT // 2 - 100, input_width, input_height)
@@ -38,7 +40,7 @@ buttons = [
     pygame.Rect(WIDTH // 2 - button_width // 2, HEIGHT // 2 + 150, button_width, button_height),
 ]
 button_colors = [GRAY, GRAY, GRAY,GRAY, RED]
-button_labels = ["VIEW MAP", "BUY TICKET", "HEATMAPS", "RACE WINNER",'SIGN OUT']
+button_labels = ["VIEW MAPS", "BUY TICKETS", "HEATMAPS", "POSITIONS",'SIGN OUT']
 
 running = True
 while running:
@@ -103,7 +105,7 @@ while running:
                             is_logged_in=False
     screen.blit(bg_image, (0, 0))
     if not is_logged_in:
-        screen.blit(logo_image, (WIDTH // 2 - 150, HEIGHT // 2 - 250))
+        screen.blit(logo_image, (WIDTH // 2 - 250, HEIGHT // 2 - 250))
         pygame.draw.rect(screen, LIGHT_GRAY, username_box)
         pygame.draw.rect(screen, LIGHT_GRAY, password_box)
         pygame.draw.rect(screen, RED, login_button)
