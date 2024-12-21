@@ -5,6 +5,7 @@ from resources import *
 from pygame_widgets.button import Button
 from pygame_widgets.dropdown import Dropdown
 
+
 def redirect():
     global error_message
     error_message = ""
@@ -14,15 +15,17 @@ def redirect():
     except Exception as e:
         error_message = "Please select a GP"
 
-def buy_ticket(screen):
+def buy_ticket(screen,current_bg_image_path):
     global error_message, dropdown
     logo_image = pygame.image.load(logo_image_path)
-    logo_image = pygame.transform.scale(logo_image, (300, 100))
+    logo_image = pygame.transform.scale(logo_image, (logo_width, logo_height))
+    bg_image_path = current_bg_image_path
     bg_image = pygame.image.load(bg_image_path).convert()
     bg_image = pygame.transform.scale(bg_image, (WIDTH, HEIGHT))
+
     year = 2024  # Using 2024 temporarily since 2025 isn't available in fastf1 yet
-    dropdown = None  # Initialize dropdown variable
     error_message = ""
+    dropdown = None 
     running = True
 
     session = ff1.get_event_schedule(year)
@@ -46,17 +49,10 @@ def buy_ticket(screen):
 
     while running:
         events = pygame.event.get()
-
-        # Drawing the background
         screen.blit(bg_image, (0, 0))
-
-        # Move the logo to the left side
-        screen.blit(logo_image, (150, 20))
-
-        # Draw the title "Buy Ticket" below the logo
+        screen.blit(logo_image, (70, 20))
         draw_text(screen, "Buy Tickets", 100, WHITE, 110, logo_image.get_height() + 10, center=False)
 
-        # Draw the description below the title
         description_lines = [
             "This feature allows you to select a previous Grand Prix of the year entered.",
             "You can view the standings of the race along with the podium finishers.",
@@ -69,33 +65,27 @@ def buy_ticket(screen):
             "Easily navigate through different years to find your favorite races.",
             "Feature implementation date: 19/12/2024."
         ]
+        description_start_y = logo_image.get_height() + 100
 
-        # Adjust the starting Y position for the description
-        description_start_y = logo_image.get_height() + 100  # Move down to make space for the title
         for i, line in enumerate(description_lines):
             draw_text(screen, line, 24, WHITE, 20, description_start_y + i * 30, center=False)
 
-        # Draw the return button below the description
         return_button = pygame.Rect(230, 550, 150, 50)
-
-        # Draw the return button
         pygame.draw.rect(screen, RED, return_button)
         draw_text(screen, "Return to Menu", 24, WHITE, return_button.centerx, return_button.centery, center=True)
 
         if error_message:
-            draw_text(screen, error_message, 20, RED, WIDTH // 2, HEIGHT // 2 + 200, center=True)
+            draw_text(screen, error_message, 20, RED, WIDTH // 2, HEIGHT // 2 + 100, center=True)
 
-        # Handle events after drawing
         for event in events:
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            elif event.type == pygame.MOUSEBUTTONDOWN and event.pos:  # Check if event has pos
+            elif event.type == pygame.MOUSEBUTTONDOWN and event.pos:
                 if return_button.collidepoint(event.pos):
                     return  # Go back to the previous menu
 
-        # Draw the dropdown menu if it is visible
-        dropdown.draw()
+        dropdown.draw()  # Draw the dropdown menu if it is visible
         pygame_widgets.update(events)
 
         pygame.display.flip()
