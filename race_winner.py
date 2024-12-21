@@ -7,22 +7,25 @@ from pygame_widgets.dropdown import Dropdown
 import matplotlib.pyplot as plt
 import fastf1.plotting
 
-def show_podium(screen):
+
+def show_podium(screen,current_bg_image_path):
     global year_text, active_box, error_message, dropdown, button
     logo_image = pygame.image.load(logo_image_path)
-    logo_image = pygame.transform.scale(logo_image, (300, 100))
+    logo_image = pygame.transform.scale(logo_image, (logo_width, logo_height))
+    bg_image_path = current_bg_image_path
     bg_image = pygame.image.load(bg_image_path).convert()
     bg_image = pygame.transform.scale(bg_image, (WIDTH, HEIGHT))
     input_width, input_height = 300, 40
     year_box = pygame.Rect(WIDTH // 2 - input_width // 2, HEIGHT // 2 - 30, input_width, input_height)
     submit_button = pygame.Rect(WIDTH // 2 - 75, HEIGHT // 2 + 40, 150, 50)
     return_button = pygame.Rect(WIDTH // 2 - 75, HEIGHT // 2 + 110, 150, 50)
+
     year_text = ""
     active_box = None
     error_message = ""
     dropdown_visible = False
-    dropdown = None  # Initialize dropdown variable
-    button = None  # Initialize button variable
+    dropdown = None 
+    button = None 
     running = True
 
     while running:
@@ -69,35 +72,25 @@ def show_podium(screen):
                     else:
                         year_text += event.unicode
 
-        # Drawing the background
         screen.blit(bg_image, (0, 0))
 
         if not dropdown_visible:
-            # Draw the logo in the center at the top
             screen.blit(logo_image, (WIDTH // 2 - logo_image.get_width() // 2, 20))
-
-            # Draw the return button
+            draw_text(screen, "Race Results", 100, WHITE, 400, logo_image.get_height() + 10, center=False)
             pygame.draw.rect(screen, RED, return_button)
             draw_text(screen, "Return to Menu", 24, WHITE, return_button.centerx, return_button.centery, center=True)
-
-            # Draw input fields and buttons
             pygame.draw.rect(screen, LIGHT_GRAY, year_box)
             pygame.draw.rect(screen, RED, submit_button)
-
+            draw_text(screen, "Year", 24, WHITE, year_box.centerx, year_box.centery - 35, center=True)
             draw_text(screen, "Submit", 24, WHITE, submit_button.centerx, submit_button.centery, center=True)
             draw_text(screen, year_text, 24, BLACK, year_box.centerx, year_box.centery, center=True)
 
             if error_message:
                 draw_text(screen, error_message, 20, RED, WIDTH // 2, HEIGHT // 2 + 100, center=True)
         else:
-            # Move the logo to the left side
-            screen.blit(logo_image, (150, 20))
-
-            # Draw the title "Race Standings" below the logo
-            title_text = "Race Standings"
+            screen.blit(logo_image, (70, 20))
+            title_text = "Race Results"
             draw_text(screen, title_text, 100, WHITE, 75, logo_image.get_height() + 10, center=False)
-
-            # Draw the description below the title
             description_lines = [
                 "This feature allows you to select a previous Grand Prix of the year entered.",
                 "You can view the standings of the race along with the podium finishers.",
@@ -110,26 +103,25 @@ def show_podium(screen):
                 "Easily navigate through different years to find your favorite races.",
                 "Feature implementation date: 19/12/2024."
             ]
-
-            # Adjust the starting Y position for the description
-            description_start_y = logo_image.get_height() + 100  # Move down to make space for the title
+            description_start_y = logo_image.get_height() + 100  
             for i, line in enumerate(description_lines):
                 draw_text(screen, line, 24, WHITE, 20, description_start_y + i * 30, center=False)
-
-            # Draw the return button below the description
             pygame.draw.rect(screen, RED, pygame.Rect(150, 550, 150, 50))
             draw_text(screen, "Return to Menu", 24, WHITE, 225, 575, center=True)
 
-            # Draw the dropdown menu if it is visible
             if dropdown:
                 dropdown.draw()
-
-            # Draw the button if it has been created
             if button:
                 button.draw()
-
-            # Update the widgets
             pygame_widgets.update(events)
+
+            for event in events:
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                elif event.type == pygame.MOUSEBUTTONDOWN and event.pos:
+                    if return_button.collidepoint(event.pos):
+                        return
 
         pygame.display.flip()
 
@@ -148,16 +140,12 @@ def position():
 
             ax.plot(drv_laps['LapNumber'], drv_laps['Position'], label=abb, **style)
 
-        ax.set_ylim([20.5, 0.5])  # Invert y-axis
+        ax.set_ylim([20.5, 0.5])  
         ax.set_yticks([1, 5, 10, 15, 20])
         ax.set_xlabel('Lap')
         ax.set_ylabel('Position')
         ax.legend(bbox_to_anchor=(1.0, 1.02))
         plt.tight_layout()
         plt.show()
-
-    except Exception as e: # Debugging
-        print(f"Error: {e}")
-
-# Call the show_podium function to start the program
-# Make sure to initialize Pygame and set up the screen before calling this function
+    except Exception as e:
+        print(f"Error: {e}")  # Debugging
