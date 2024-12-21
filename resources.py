@@ -15,20 +15,25 @@ except PermissionError:
     print("No permission.\nDefault cache directory: C:\\Users\\...\\AppData\\Local\\Temp\\fastf1")
 else:
     print("Cache directory successfully created.")
-sleep(5)
+    sleep(5)  # Waiting for directory to be created
 
 if permission:
     ff1.Cache.enable_cache("cache")
+
+try:
+    with open("credentials.txt", "x"):
+        pass
+except FileExistsError:
+    pass
+else:
+    print("credentials.txt successfully created.")
 
 # Variables
 WIDTH = 1280
 HEIGHT = 720
 logo_width = 500
 logo_height = 100
-
-bg_image_path = "assets/bg.jpg"
-# icon_path = "assets/fw.png"
-logo_image_path = "assets/formulawise.png"
+logo_image_path = "assets/fwise.png"
 
 RED = (255, 0, 0)
 WHITE = (255, 255, 255)
