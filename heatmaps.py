@@ -5,9 +5,14 @@ from resources import *
 from matplotlib import pyplot as plt
 from matplotlib.collections import LineCollection
 
-def heatmaps(screen):
+
+def heatmaps(screen,current_bg_image_path):
     global driver_text, year_text, week_text, active_box, error_message
+    bg_image_path = current_bg_image_path
     bg_image = pygame.image.load(bg_image_path).convert()
+    bg_image = pygame.transform.scale(bg_image, (WIDTH, HEIGHT))
+    logo_image = pygame.image.load(logo_image_path)
+    logo_image = pygame.transform.scale(logo_image, (logo_width, logo_height))
     input_width, input_height = 300, 40
     driver_box = pygame.Rect(WIDTH // 2 - input_width // 2, HEIGHT // 2 - 100, input_width, input_height)
     year_box = pygame.Rect(WIDTH // 2 - input_width // 2, HEIGHT // 2 - 30, input_width, input_height)
@@ -21,6 +26,7 @@ def heatmaps(screen):
     active_box = None
     error_message = ""
     running = True
+
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -62,8 +68,10 @@ def heatmaps(screen):
                     else:
                         week_text += event.unicode
 
-        # Drawing the plot
-        
+        screen.blit(bg_image, (0, 0))
+        screen.blit(logo_image, (WIDTH // 2 - logo_image.get_width() // 2, 20))
+        draw_text(screen, "Heatmaps", 100, WHITE, 460, logo_image.get_height() + 10, center=False)
+
         pygame.draw.rect(screen, LIGHT_GRAY, driver_box)
         pygame.draw.rect(screen, LIGHT_GRAY, year_box)
         pygame.draw.rect(screen, LIGHT_GRAY, week_box)
@@ -107,7 +115,7 @@ def plot_heatmap(driver, year, week):
         normlegend = mpl.colors.Normalize(vmin=color.min(), vmax=color.max())
         mpl.colorbar.ColorbarBase(cbaxes, norm=normlegend, cmap=mpl.cm.plasma, orientation="horizontal")
         plt.show()
-    except Exception as e: # Debugging
-        print(f"Error: {e}")
+    except Exception as e:
+        print(f"Error: {e}")  # Debugging
         return False
     return True
