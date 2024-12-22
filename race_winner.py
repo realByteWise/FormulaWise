@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import fastf1.plotting
 
 
-def show_podium(screen,current_bg_image_path):
+def show_podium(screen, current_bg_image_path):
     global year_text, active_box, error_message, dropdown, button
     logo_image = pygame.image.load(logo_image_path)
     logo_image = pygame.transform.scale(logo_image, (logo_width, logo_height))
@@ -24,8 +24,8 @@ def show_podium(screen,current_bg_image_path):
     active_box = None
     error_message = ""
     dropdown_visible = False
-    dropdown = None 
-    button = None 
+    dropdown = None
+    button = None
     running = True
 
     while running:
@@ -48,13 +48,14 @@ def show_podium(screen,current_bg_image_path):
                             dropdown = Dropdown(
                                 screen, 685, 50, 550, 25, name='Select Grand Prix',
                                 choices=countries, fontSize=25,
-                                borderRadius=5, colour=pygame.Color('gray'), values=countries, direction='down', textHAlign='centre', textColor=pygame.Color('Red')
+                                borderRadius=5, colour=pygame.Color('gray'), values=countries, direction='down',
+                                textHAlign='centre', textColor=pygame.Color('Red')
                             )
-            
+
                             button = Button(
                                 screen, 900, 330, 150, 50, text='Submit',
                                 margin=20, inactiveColour=(255, 0, 0), pressedColour=(0, 255, 0),
-                                radius=5, onClick=position,  
+                                radius=5, onClick=position,
                                 font=pygame.font.SysFont(pygame.font.match_font('Palatino'), 25),
                                 textVAlign='center'
                             )
@@ -103,7 +104,7 @@ def show_podium(screen,current_bg_image_path):
                 "Easily navigate through different years to find your favorite races.",
                 "Feature implementation date: 19/12/2024."
             ]
-            description_start_y = logo_image.get_height() + 100  
+            description_start_y = logo_image.get_height() + 100
             for i, line in enumerate(description_lines):
                 draw_text(screen, line, 24, WHITE, 20, description_start_y + i * 30, center=False)
             pygame.draw.rect(screen, RED, pygame.Rect(150, 550, 150, 50))
@@ -125,6 +126,7 @@ def show_podium(screen,current_bg_image_path):
 
         pygame.display.flip()
 
+
 def position():
     fastf1.plotting.setup_mpl(mpl_timedelta_support=False, misc_mpl_mods=False, color_scheme='fastf1')
     try:
@@ -133,18 +135,22 @@ def position():
 
         fig, ax = plt.subplots(figsize=(8.0, 4.9))
         for drv in session.drivers:
-            drv_laps = session.laps.pick_driver(drv)
+            try:
+                drv_laps = session.laps.pick_drivers(drv)
 
-            abb = drv_laps['Driver'].iloc[0]
-            style = fastf1.plotting.get_driver_style(identifier=abb, style=['color', 'linestyle'], session=session)
+                abb = drv_laps['Driver'].iloc[0]
+                style = fastf1.plotting.get_driver_style(identifier=abb, style=['color', 'linestyle'], session=session)
 
-            ax.plot(drv_laps['LapNumber'], drv_laps['Position'], label=abb, **style)
+                ax.plot(drv_laps['LapNumber'], drv_laps['Position'], label=abb, **style)
+            except Exception:
+                continue
 
-        ax.set_ylim([20.5, 0.5])  
+        ax.set_ylim([20.5, 0.5])
         ax.set_yticks([1, 5, 10, 15, 20])
         ax.set_xlabel('Lap')
         ax.set_ylabel('Position')
         ax.legend(bbox_to_anchor=(1.0, 1.02))
+        plt.figure("Race Results")
         plt.tight_layout()
         plt.show()
     except Exception as e:
