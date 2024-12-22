@@ -3,18 +3,10 @@ import pygame
 from resources import *
 
 
-pygame.mixer.init()
-music_tracks = [
-    ('assets/music/gas.mp3', 'assets/bgs/main.jpg'),
-    ('assets/music/krimuh.mp3', 'assets/bgs/krimuh.jpg'),
-    ('assets/music/sigma.mp3', 'assets/bgs/sigma.jpg'),
-    ('assets/music/chill.mp3', 'assets/bgs/chill.gif'),
-    ('assets/music/opium.mp3', 'assets/bgs/opium.jpg')
-]
-current_track_index = 0
+music_on, current_theme_index, volume = load_preferences()
 
 def play_current_track():
-    pygame.mixer.music.load(music_tracks[current_track_index][0])
+    pygame.mixer.music.load(themes[current_theme_index][0])
     pygame.mixer.music.play(-1)
 
 def draw_text(screen, text, size, color, x, y, center=False):
@@ -24,11 +16,9 @@ def draw_text(screen, text, size, color, x, y, center=False):
     screen.blit(text_surface, text_rect)
 
 def show_settings(screen, current_bg_image_path):
-    global current_track_index
-    bg_image = pygame.image.load(music_tracks[current_track_index][1]).convert()
+    global music_on, current_theme_index, volume
+    bg_image = pygame.image.load(themes[current_theme_index][1]).convert()
     bg_image = pygame.transform.scale(bg_image, (WIDTH, HEIGHT))
-    music_on = pygame.mixer.music.get_busy()
-    volume = pygame.mixer.music.get_volume()
     pygame.mixer.music.set_volume(volume)
     slider_rect = pygame.Rect(550, 300, 200, 10) 
     slider_handle_rect = pygame.Rect(slider_rect.x + volume * slider_rect.width - 10, slider_rect.y - 10, 20, 30)  
@@ -57,13 +47,13 @@ def show_settings(screen, current_bg_image_path):
                             pygame.mixer.music.pause()
                             
                     if change_music_button_rect.collidepoint(event.pos):
-                        current_track_index = (current_track_index + 1) % len(music_tracks)  
+                        current_theme_index = (current_theme_index + 1) % len(themes)
                         play_current_track()  
-                        bg_image = pygame.image.load(music_tracks[current_track_index][1]).convert()  
+                        bg_image = pygame.image.load(themes[current_theme_index][1]).convert()
                         bg_image = pygame.transform.scale(bg_image, (WIDTH, HEIGHT))  
-                        current_bg_image_path = music_tracks[current_track_index][1]
+                        current_bg_image_path = themes[current_theme_index][1]
                     if return_button_rect.collidepoint(event.pos):
-                        running = False 
+                        running = False
 
             if event.type == pygame.MOUSEBUTTONUP:
                 if event.button == 1: 
@@ -73,9 +63,16 @@ def show_settings(screen, current_bg_image_path):
                 if dragging:
                     mouse_x = event.pos[0]
                     if slider_rect.x <= mouse_x <= slider_rect.x + slider_rect.width:
-                        slider_handle_rect.x = mouse_x - 10  
-                        volume = (slider_handle_rect.x - slider_rect.x) / slider_rect.width
-                        pygame.mixer.music.set_volume(volume)  
+                        slider_handle_rect.x = mouse_x - 10
+                    elif mouse_x < slider_rect.x:
+                        slider_handle_rect.x = slider_rect.x
+                    elif mouse_x > slider_rect.x + slider_rect.width:
+                        slider_handle_rect.x = slider_rect.x + slider_rect.width - 20
+
+
+                    volume = (slider_handle_rect.x - slider_rect.x) / (slider_rect.width - 20)
+                    volume = max(0.0, min(volume, 1.0))
+                    pygame.mixer.music.set_volume(volume)
         screen.blit(bg_image, (0, 0))
         music_button_color = (255, 0, 0) if music_on else (0, 0, 255)
         music_button_rect = pygame.Rect(550, 200, 200, 50)
@@ -85,9 +82,11 @@ def show_settings(screen, current_bg_image_path):
         pygame.draw.rect(screen, (255, 0, 0), slider_handle_rect)  
         draw_text(screen, f"Volume: {int(volume * 100)}%", 24, (255, 255, 255),slider_rect.centerx, slider_rect.y - 30, center=True)
         pygame.draw.rect(screen, button_color, change_music_button_rect)
-        draw_text(screen, "Change Music", 24, (255, 255, 255), change_music_button_rect.centerx, change_music_button_rect.centery, center=True)
+        draw_text(screen, "Change Theme", 24, (255, 255, 255), change_music_button_rect.centerx, change_music_button_rect.centery, center=True)
         pygame.draw.rect(screen, button_color, return_button_rect)
         draw_text(screen, "Return", 24, (255, 255, 255), return_button_rect.centerx, return_button_rect.centery, center=True)
 
         pygame.display.flip()
+
+    save_preferences(music_on, current_theme_index, volume)
     return current_bg_image_path
