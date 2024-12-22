@@ -4,6 +4,7 @@ import fastf1 as ff1
 from time import sleep
 from datetime import datetime
 
+
 # Creating cache directory if it doesn't exist
 permission = True
 try:
@@ -12,9 +13,9 @@ except FileExistsError:
     pass
 except PermissionError:
     permission = False
-    print("No permission.\nDefault cache directory: C:\\Users\\...\\AppData\\Local\\Temp\\fastf1")
+    print("LOG: No permission.\nDefault cache directory: C:\\Users\\...\\AppData\\Local\\Temp\\fastf1")
 else:
-    print("Cache directory successfully created.")
+    print("LOG: Cache directory successfully created.")
     sleep(5)  # Waiting for directory to be created
 
 if permission:
@@ -26,7 +27,16 @@ try:
 except FileExistsError:
     pass
 else:
-    print("credentials.txt successfully created.")
+    print("LOG: credentials.txt successfully created.")
+
+try:
+    open("preferences.txt", "x")
+    with open("preferences.txt", "w") as file:
+        file.write("True,0,1.0")
+except FileExistsError:
+    pass
+else:
+    print("LOG: preferences.txt successfully created.")
 
 # Variables
 WIDTH = 1280
@@ -69,6 +79,15 @@ gp_info = {'Australian Grand Prix': [datetime(2025, 3, 16), "assets/maps/austral
            'Qatar Grand Prix': [datetime(2025, 11, 30), "assets/maps/qatar-gp.jpg", "https://tickets.formula1.com/en/f1-56257-qatar?_gl=1*1ct9pq4*_up*MQ..*_gs*MQ..&gclid=CjwKCAiAgoq7BhBxEiwAVcW0LOWPx0O_wrn_lEDtiJtCYXxbMiJ8jdXDXZlrKPPBzaSuaq-ttZz2kRoCAxkQAvD_BwE"],
            'Abu Dhabi Grand Prix': [datetime(2025, 12, 7), "assets/maps/abu-dhabi-gp.jpg", "https://tickets.formula1.com/en/f1-3312-abu-dhabi?_gl=1*1ct9pq4*_up*MQ..*_gs*MQ..&gclid=CjwKCAiAgoq7BhBxEiwAVcW0LOWPx0O_wrn_lEDtiJtCYXxbMiJ8jdXDXZlrKPPBzaSuaq-ttZz2kRoCAxkQAvD_BwE"]}
 
+themes = [
+    ('assets/music/gas.mp3', 'assets/bgs/main.jpg'),
+    ('assets/music/krimuh.mp3', 'assets/bgs/krimuh.jpg'),
+    ('assets/music/sigma.mp3', 'assets/bgs/sigma.jpg'),
+    ('assets/music/chill.mp3', 'assets/bgs/chill.gif'),
+    ('assets/music/opium.mp3', 'assets/bgs/opium.jpg'),
+    ('assets/music/lifeforce.mp3', 'assets/bgs/lifeforce.jpg')
+]
+
 # Functions
 def draw_text(screen, text, size, color, x, y, center=False):
     font = pygame.font.Font(None, size)
@@ -92,11 +111,31 @@ def load_credentials():
                         username, password = parts
                         credentials[username] = password
                     else:
-                        print(f"Skipping malformed line: {line}")
+                        print(f"LOG: Skipping malformed line: {line}")
     except FileNotFoundError:
-        print("Credentials file not found.")
+        print("LOG: Credentials file not found.")
     return credentials
 
 def save_credentials(username, password):
     with open("credentials.txt", "a") as file:
         file.write(f"{username}:{password}\n")
+
+def load_preferences():
+    try:
+        with open("preferences.txt", "r") as file:
+            line = file.readline().strip()
+            if line:
+                parts = line.split(",")
+                if len(parts) == 3:
+                    music_on = bool(parts[0])
+                    theme = int(parts[1])
+                    volume = float(parts[2])
+                else:
+                    print(f"LOG: Skipping malformed line: {line}")
+    except FileNotFoundError:
+        print("LOG: Preferences file not found.")
+    return music_on, theme, volume
+
+def save_preferences(music_on: bool, theme: int, volume: float):
+    with open("preferences.txt", "w") as file:
+        file.write(f"{music_on},{theme},{volume}")
