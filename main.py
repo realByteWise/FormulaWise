@@ -12,7 +12,8 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("FormulaWise")
 icon_image = pygame.image.load("assets/fw.png")
 pygame.display.set_icon(icon_image)
-current_bg_image_path = "assets/bgs/main.jpg"
+music_on, current_theme_index, volume = load_preferences()
+current_bg_image_path = themes[current_theme_index][1]
 bg_image = pygame.image.load(current_bg_image_path)
 bg_image = pygame.transform.scale(bg_image, (WIDTH, HEIGHT))
 logo_image = pygame.image.load(logo_image_path)
@@ -24,8 +25,10 @@ font = pygame.font.Font(pygame.font.match_font('Palatino'), 24)
 input_width, input_height = 300, 40
 pygame.init()
 pygame.mixer.init()
-pygame.mixer.music.load('assets/music/gas.mp3')
-pygame.mixer.music.play(-1)
+if music_on:
+    pygame.mixer.music.load(themes[current_theme_index][0])
+    pygame.mixer.music.play(-1)
+    pygame.mixer.music.set_volume(volume)
 username_box = pygame.Rect(WIDTH // 2 - input_width // 2, HEIGHT // 2 - 100, input_width, input_height)
 password_box = pygame.Rect(WIDTH // 2 - input_width // 2, HEIGHT // 2 - 30, input_width, input_height)
 login_button = pygame.Rect(WIDTH // 2 - 75, HEIGHT // 2 + 60, 150, 50)
