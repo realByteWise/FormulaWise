@@ -8,8 +8,8 @@ import matplotlib.pyplot as plt
 import fastf1.plotting
 
 
-def show_podium(screen, current_bg_image_path):
-    global year_text, active_box, error_message, dropdown, button
+def show_positions(screen, current_bg_image_path):
+    global year_text, active_box, error_message, positions_dropdown, view_positions_button
     logo_image = pygame.image.load(logo_image_path)
     logo_image = pygame.transform.scale(logo_image, (logo_width, logo_height))
     bg_image_path = current_bg_image_path
@@ -24,8 +24,8 @@ def show_podium(screen, current_bg_image_path):
     active_box = None
     error_message = ""
     dropdown_visible = False
-    dropdown = None
-    button = None
+    positions_dropdown = None
+    view_positions_button = None
     running = True
 
     while running:
@@ -42,26 +42,30 @@ def show_podium(screen, current_bg_image_path):
                         try:
                             session = ff1.get_event_schedule(int(year_text))
                             countries = session["EventName"].tolist()
+
                             if countries[0] == "Pre-Season Testing":
                                 countries.remove("Pre-Season Testing")
                             dropdown_visible = True
-                            dropdown = Dropdown(
-                                screen, 685, 50, 550, 25, name='Select Grand Prix',
-                                choices=countries, fontSize=25,
-                                borderRadius=5, colour=pygame.Color('gray'), values=countries, direction='down',
+
+                            positions_dropdown = Dropdown(
+                                screen, 685, 20, 550, 27, name='Select Grand Prix',
+                                choices=countries, fontSize=25, borderRadius=5,
+                                colour=pygame.Color('gray'), values=countries, direction='down',
                                 textHAlign='centre', textColor=pygame.Color('Red')
                             )
 
-                            button = Button(
-                                screen, 900, 330, 150, 50, text='Submit',
+                            view_positions_button = Button(
+                                screen, 890, 200, 150, 50, text='View Positions',
                                 margin=20, inactiveColour=(255, 0, 0), pressedColour=(0, 255, 0),
-                                radius=5, onClick=position,
-                                font=pygame.font.SysFont(pygame.font.match_font('Palatino'), 25),
-                                textVAlign='center'
+                                radius=5, font=pygame.font.SysFont(pygame.font.match_font('Palatino'), 25),
+                                textVAlign='center', onClick=plot_positions
                             )
-                        except Exception as e:
+                        except Exception:
                             error_message = "Error fetching data. Please try again."
+
                 elif return_button.collidepoint(event.pos):
+                    positions_dropdown = None
+                    view_positions_button = None
                     return
                 else:
                     error_message = "Please enter a year."
@@ -90,8 +94,7 @@ def show_podium(screen, current_bg_image_path):
                 draw_text(screen, error_message, 20, RED, WIDTH // 2, HEIGHT // 2 + 100, center=True)
         else:
             screen.blit(logo_image, (70, 20))
-            title_text = "Race Results"
-            draw_text(screen, title_text, 100, WHITE, 75, logo_image.get_height() + 10, center=False)
+            draw_text(screen, "Race Results", 100, WHITE, 75, logo_image.get_height() + 10, center=False)
             description_lines = [
                 "This feature allows you to select a previous Grand Prix of the year entered.",
                 "You can view the standings of the race along with the podium finishers.",
@@ -105,16 +108,13 @@ def show_podium(screen, current_bg_image_path):
                 "Feature implementation date: 19/12/2024."
             ]
             description_start_y = logo_image.get_height() + 100
+
             for i, line in enumerate(description_lines):
                 draw_text(screen, line, 24, WHITE, 20, description_start_y + i * 30, center=False)
-            pygame.draw.rect(screen, RED, pygame.Rect(150, 550, 150, 50))
-            draw_text(screen, "Return to Menu", 24, WHITE, 225, 575, center=True)
 
-            if dropdown:
-                dropdown.draw()
-            if button:
-                button.draw()
-            pygame_widgets.update(events)
+            return_button = pygame.Rect(230, 550, 150, 50)
+            pygame.draw.rect(screen, RED, return_button)
+            draw_text(screen, "Return to Menu", 24, WHITE, return_button.centerx, return_button.centery, center=True)
 
             for event in events:
                 if event.type == pygame.QUIT:
@@ -122,15 +122,21 @@ def show_podium(screen, current_bg_image_path):
                     sys.exit()
                 elif event.type == pygame.MOUSEBUTTONDOWN and event.pos:
                     if return_button.collidepoint(event.pos):
+                        positions_dropdown = None
+                        view_positions_button = None
                         return
+
+            pygame_widgets.update(events)
 
         pygame.display.flip()
 
+    positions_dropdown = None
+    view_positions_button = None
 
-def position():
+def plot_positions():
     fastf1.plotting.setup_mpl(mpl_timedelta_support=False, misc_mpl_mods=False, color_scheme='fastf1')
     try:
-        session = ff1.get_session(int(year_text), dropdown.getSelected(), 'R')
+        session = ff1.get_session(int(year_text), positions_dropdown.getSelected(), 'R')
         session.load(telemetry=False, weather=False)
 
         fig, ax = plt.subplots(figsize=(8.0, 4.9))
@@ -150,7 +156,6 @@ def position():
         ax.set_xlabel('Lap')
         ax.set_ylabel('Position')
         ax.legend(bbox_to_anchor=(1.0, 1.02))
-        plt.figure("Race Results")
         plt.tight_layout()
         plt.show()
     except Exception as e:
