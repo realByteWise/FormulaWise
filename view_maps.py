@@ -15,7 +15,7 @@ def rotate(xy, *, angle):
 
 def plot_map():
     try:
-        session = ff1.get_session(int(year_text), dropdown.getSelected(), 'R')
+        session = ff1.get_session(int(year_text), maps_dropdown.getSelected(), 'R')
         session.load()
         lap = session.laps.pick_fastest()
         pos = lap.get_pos_data()
@@ -48,8 +48,8 @@ def plot_map():
     except Exception as e:
         print(f"Error: {e}")  # Debugging
 
-def view_map(screen,current_bg_image_path):
-    global year_text, active_box, error_message, dropdown
+def view_maps(screen, current_bg_image_path):
+    global year_text, active_box, error_message, maps_dropdown
     bg_image_path = current_bg_image_path
     logo_image = pygame.image.load("assets/fwise.png")
     logo_image = pygame.transform.scale(logo_image, (logo_width, logo_height))
@@ -64,7 +64,7 @@ def view_map(screen,current_bg_image_path):
     active_box = None
     error_message = ""
     dropdown_visible = False
-    dropdown = None 
+    maps_dropdown = None
     running = True
 
     while running:
@@ -81,25 +81,30 @@ def view_map(screen,current_bg_image_path):
                         try:
                             session = ff1.get_event_schedule(int(year_text))
                             countries = session["EventName"].tolist()
+
                             if countries[0]=="Pre-Season Testing":
                                 countries.remove("Pre-Season Testing")
                             dropdown_visible = True
-                            dropdown = Dropdown(
+
+                            maps_dropdown = Dropdown(
                                 screen, 685, 20, 550, 27, name='Select Grand Prix',
-                                choices=countries, fontSize=25,
-                                borderRadius=5, colour=pygame.Color('gray'), values=countries, direction='down', textHAlign='centre', textColor=pygame.Color('Red')
+                                choices=countries, fontSize=25, borderRadius=5,
+                                colour=pygame.Color('gray'), values=countries, direction='down',
+                                textHAlign='centre', textColor=pygame.Color('Red')
                             )
                             
-                            button = Button(
+                            view_maps_button = Button(
                                 screen, 890, 200, 150, 50, text='View Map',
                                 margin=20, inactiveColour=(255, 0, 0), pressedColour=(0, 255, 0),
-                                font=pygame.font.SysFont('arial', 25, bold=True), radius=5,
+                                radius=5, font=pygame.font.SysFont(pygame.font.match_font('Palatino'), 25),
                                 textVAlign='centre', onClick=plot_map
                             )
                         except Exception:
                             error_message = "Error fetching data. Please try again."
 
                 elif return_button.collidepoint(event.pos):
+                    maps_dropdown = None
+                    view_maps_button = None
                     return
                 else:
                     error_message = "Please enter a year."
@@ -156,8 +161,13 @@ def view_map(screen,current_bg_image_path):
                     sys.exit()
                 elif event.type == pygame.MOUSEBUTTONDOWN and event.pos: 
                     if return_button.collidepoint(event.pos):
+                        maps_dropdown = None
+                        view_maps_button = None
                         return
 
-            dropdown.draw()
             pygame_widgets.update(events)
+
         pygame.display.flip()
+
+    maps_dropdown = None
+    view_maps_button = None
