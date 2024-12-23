@@ -10,13 +10,13 @@ def redirect():
     global error_message
     error_message = ""
     try:
-        link = gp_info[dropdown.getSelected()][2]
+        link = gp_info[tickets_dropdown.getSelected()][2]
         webbrowser.open(link)
-    except Exception as e:
+    except Exception:
         error_message = "Please select a GP"
 
-def buy_ticket(screen,current_bg_image_path):
-    global error_message, dropdown
+def buy_tickets(screen, current_bg_image_path):
+    global error_message, tickets_dropdown
     logo_image = pygame.image.load(logo_image_path)
     logo_image = pygame.transform.scale(logo_image, (logo_width, logo_height))
     bg_image_path = current_bg_image_path
@@ -25,25 +25,26 @@ def buy_ticket(screen,current_bg_image_path):
 
     year = 2024  # Using 2024 temporarily since 2025 isn't available in fastf1 yet
     error_message = ""
-    dropdown = None 
+    tickets_dropdown = None
     running = True
 
     session = ff1.get_event_schedule(year)
     countries = session["EventName"].tolist()
+
     if countries[0] == "Pre-Season Testing":
         countries.remove("Pre-Season Testing")
 
-    dropdown = Dropdown(
+    tickets_dropdown = Dropdown(
         screen, 685, 20, 550, 27, name='Select Grand Prix',
-        choices=countries, fontSize=25,
-        borderRadius=5, colour=pygame.Color('gray'), values=countries, direction='down', textHAlign='centre',
-        textColor=pygame.Color('Red')
+        choices=countries, fontSize=25, borderRadius=5,
+        colour=pygame.Color('gray'), values=countries, direction='down',
+        textHAlign='centre', textColor=pygame.Color('Red')
     )
 
-    button = Button(
+    buy_tickets_button = Button(
         screen, 890, 200, 150, 50, text='Buy Tickets',
         margin=20, inactiveColour=(255, 0, 0), pressedColour=(0, 255, 0),
-        font=pygame.font.SysFont('arial', 25, bold=True), radius=5,
+        radius=5, font=pygame.font.SysFont(pygame.font.match_font('Palatino'), 25),
         textVAlign='centre', onClick=redirect
     )
 
@@ -83,9 +84,12 @@ def buy_ticket(screen,current_bg_image_path):
                 sys.exit()
             elif event.type == pygame.MOUSEBUTTONDOWN and event.pos:
                 if return_button.collidepoint(event.pos):
+                    tickets_dropdown = None
+                    buy_tickets_button = None
                     return  # Go back to the previous menu
 
-        dropdown.draw()  # Draw the dropdown menu if it is visible
         pygame_widgets.update(events)
-
         pygame.display.flip()
+
+    tickets_dropdown = None
+    buy_tickets_button = None
