@@ -1,9 +1,9 @@
 import sys
 from resources import *
-from view_map import view_map
-from buy_ticket import buy_ticket
+from view_maps import view_maps
+from buy_tickets import buy_tickets
 from heatmaps import heatmaps
-from race_winner import show_podium
+from race_positions import show_positions
 from settings import show_settings
 
 
@@ -101,13 +101,13 @@ while running:
                 for i, button in enumerate(buttons):
                     if button.collidepoint(event.pos):
                         if i == 0:
-                            view_map(screen,current_bg_image_path)
+                            view_maps(screen, current_bg_image_path)
                         elif i == 1:
-                            buy_ticket(screen,current_bg_image_path)
+                            buy_tickets(screen, current_bg_image_path)
                         elif i == 2:
                             heatmaps(screen,current_bg_image_path)
                         elif i == 3:
-                            show_podium(screen,current_bg_image_path)
+                            show_positions(screen, current_bg_image_path)
                         elif i == 4:
                             is_logged_in = False  
 
