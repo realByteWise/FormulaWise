@@ -10,7 +10,7 @@ def redirect():
     global error_message
     error_message = ""
     try:
-        link = gp_info[tickets_dropdown.getSelected()][2]
+        link = gp_info_2025[tickets_dropdown.getSelected()][2]
         webbrowser.open(link)
     except Exception:
         error_message = "Please select a GP"
@@ -23,16 +23,11 @@ def buy_tickets(screen, current_bg_image_path):
     bg_image = pygame.image.load(bg_image_path).convert()
     bg_image = pygame.transform.scale(bg_image, (WIDTH, HEIGHT))
 
-    year = 2024  # Using 2024 temporarily since 2025 isn't available in fastf1 yet
     error_message = ""
     tickets_dropdown = None
     running = True
-
-    session = ff1.get_event_schedule(year)
-    countries = session["EventName"].tolist()
-
-    if countries[0] == "Pre-Season Testing":
-        countries.remove("Pre-Season Testing")
+    today = datetime.today()
+    countries = [location for location, details in gp_info_2025.items() if today <= details[0]]
 
     tickets_dropdown = Dropdown(
         screen, 685, 20, 550, 27, name='Select Grand Prix',
