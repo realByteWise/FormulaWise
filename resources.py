@@ -86,8 +86,8 @@ themes = [
     ('assets/music/gas.mp3', 'assets/bgs/main.jpg'),
     ('assets/music/krimuh.mp3', 'assets/bgs/krimuh.jpg'),
     ('assets/music/sigma.mp3', 'assets/bgs/sigma.jpg'),
-    ('assets/music/chill.mp3', 'assets/bgs/chill.gif'),
-    ('assets/music/lifeforce.mp3', 'assets/bgs/lifeforce.png')
+    ('assets/music/chill.mp3', 'assets/bgs/chill.jpg'),
+    ('assets/music/lifeforce.mp3', 'assets/bgs/lifeforce.jpg')
 ]
 
 # Functions
