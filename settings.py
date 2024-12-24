@@ -3,7 +3,7 @@ import pygame
 from resources import *
 
 
-music_on, current_theme_index, volume = load_preferences()
+music_on, current_theme_index, volume, login_date = load_preferences()
 
 def play_current_track():
     pygame.mixer.music.load(themes[current_theme_index][0])
@@ -31,6 +31,7 @@ def show_settings(screen, current_bg_image_path):
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                save_preferences(music_on, current_theme_index, volume, login_date)
                 pygame.quit()
                 sys.exit()
 
@@ -84,9 +85,9 @@ def show_settings(screen, current_bg_image_path):
         pygame.draw.rect(screen, button_color, change_music_button_rect)
         draw_text(screen, "Change Theme", 24, (255, 255, 255), change_music_button_rect.centerx, change_music_button_rect.centery, center=True)
         pygame.draw.rect(screen, button_color, return_button_rect)
-        draw_text(screen, "Return", 24, (255, 255, 255), return_button_rect.centerx, return_button_rect.centery, center=True)
+        draw_text(screen, "Save & Return", 24, (255, 255, 255), return_button_rect.centerx, return_button_rect.centery, center=True)
 
         pygame.display.flip()
 
-    save_preferences(music_on, current_theme_index, volume)
+    save_preferences(music_on, current_theme_index, volume, login_date)
     return current_bg_image_path
