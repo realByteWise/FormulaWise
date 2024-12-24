@@ -12,29 +12,24 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("FormulaWise")
 icon_image = pygame.image.load("assets/fw.png")
 pygame.display.set_icon(icon_image)
-music_on, current_theme_index, volume = load_preferences()
+music_on, current_theme_index, volume, login_date = load_preferences()
 current_bg_image_path = themes[current_theme_index][1]
 bg_image = pygame.image.load(current_bg_image_path)
 bg_image = pygame.transform.scale(bg_image, (WIDTH, HEIGHT))
 logo_image = pygame.image.load(logo_image_path)
 logo_image = pygame.transform.scale(logo_image, (logo_width, logo_height))
 settings_button_image = pygame.image.load("assets/settings.png")
-settings_button_rect = settings_button_image.get_rect(center=(260, 900))  
+settings_button_rect = settings_button_image.get_rect(center=(260, 900))
 settings_button_image = pygame.transform.scale(settings_button_image, (50, 50))
 font = pygame.font.Font(pygame.font.match_font('Palatino'), 24)
 input_width, input_height = 300, 40
+button_width, button_height = 150, 50
 pygame.init()
 pygame.mixer.init()
 if music_on:
     pygame.mixer.music.load(themes[current_theme_index][0])
     pygame.mixer.music.play(-1)
     pygame.mixer.music.set_volume(volume)
-username_box = pygame.Rect(WIDTH // 2 - input_width // 2, HEIGHT // 2 - 100, input_width, input_height)
-password_box = pygame.Rect(WIDTH // 2 - input_width // 2, HEIGHT // 2 - 20, input_width, input_height)
-confirm_password_box = pygame.Rect(WIDTH // 2 - input_width // 2, HEIGHT // 2 + 60, input_width, input_height)
-login_button = pygame.Rect(WIDTH // 2 - 75, HEIGHT // 2 + 60, 150, 50)
-signup_button = pygame.Rect(WIDTH // 2 - 75, HEIGHT // 2 + 130, 150, 50)
-cancel_button = pygame.Rect(WIDTH // 2 - 75, HEIGHT // 2 + 200, 150, 50)
 
 username_text = ""
 password_text = ""
@@ -43,15 +38,26 @@ active_box = None
 error_message = ""
 is_signing_up = False
 credentials = load_credentials()
-is_logged_in = False
+today = datetime.today()
+valid_date = today - timedelta(days=8)
+if login_date < valid_date:
+    is_logged_in = False
+else:
+    is_logged_in = True
 
-button_width, button_height = 150, 50
+username_box = pygame.Rect(WIDTH // 2 - input_width // 2, HEIGHT // 2 - 100, input_width, input_height)
+password_box = pygame.Rect(WIDTH // 2 - input_width // 2, HEIGHT // 2 - 20, input_width, input_height)
+confirm_password_box = pygame.Rect(WIDTH // 2 - input_width // 2, HEIGHT // 2 + 60, input_width, input_height)
+login_button = pygame.Rect(WIDTH // 2 - 75, HEIGHT // 2 + 60, button_width, button_height)
+signup_button = pygame.Rect(WIDTH // 2 - 75, HEIGHT // 2 + 130, button_width, button_height)
+cancel_button = pygame.Rect(WIDTH // 2 - 75, HEIGHT // 2 + 200, button_width, button_height)
+
 buttons = [
     pygame.Rect(WIDTH // 2 - button_width // 2, HEIGHT // 2 - 130, button_width, button_height),
     pygame.Rect(WIDTH // 2 - button_width // 2, HEIGHT // 2 - 60, button_width, button_height),
     pygame.Rect(WIDTH // 2 - button_width // 2, HEIGHT // 2 + 10, button_width, button_height),
     pygame.Rect(WIDTH // 2 - button_width // 2, HEIGHT // 2 + 80, button_width, button_height),
-    pygame.Rect(WIDTH // 2 - button_width // 2, HEIGHT // 2 + 150, button_width, button_height),
+    pygame.Rect(WIDTH // 2 - button_width // 2, HEIGHT // 2 + 150, button_width, button_height)
 ]
 button_colors = [GRAY, GRAY, GRAY, GRAY, RED]
 button_labels = ["VIEW MAPS", "BUY TICKETS", "HEATMAPS", "RESULTS", "SIGN OUT"]
@@ -70,7 +76,9 @@ while running:
                 elif login_button and login_button.collidepoint(event.pos):
                     if username_text and password_text:
                         if username_text in credentials and credentials[username_text] == password_text:
+                            login_date = datetime.today()
                             is_logged_in = True
+                            save_preferences(music_on, current_theme_index, volume, login_date)
                             username_text, password_text, error_message = "", "", ""
                         else:
                             error_message = "Invalid username or password."
@@ -84,15 +92,19 @@ while running:
                     else:
                         if username_text and password_text and confirm_password_text:
                             if password_text == confirm_password_text:
-                                if username_text in credentials:
-                                    error_message = "Username already exists!"
+                                valid = password_validator(password_text)
+                                if valid[0]:
+                                    if username_text in credentials:
+                                        error_message = "Username already exists!"
+                                    else:
+                                        credentials[username_text] = password_text
+                                        save_credentials(username_text, password_text)
+                                        error_message = "Sign-Up Successful! Please log in."
+                                        username_text, password_text, confirm_password_text = "", "", ""
+                                        is_signing_up = False
+                                        login_button = pygame.Rect(WIDTH // 2 - 75, HEIGHT // 2 + 60, 150, 50)
                                 else:
-                                    credentials[username_text] = password_text
-                                    save_credentials(username_text, password_text)
-                                    error_message = "Sign-Up Successful! Please log in."
-                                    username_text, password_text, confirm_password_text = "", "", ""
-                                    is_signing_up = False
-                                    login_button = pygame.Rect(WIDTH // 2 - 75, HEIGHT // 2 + 60, 150, 50)
+                                    error_message = valid[1]
                             else:
                                 error_message = "Passwords don't match."
                         else:
@@ -137,10 +149,12 @@ while running:
                         elif i == 3:
                             show_positions(screen, current_bg_image_path)
                         elif i == 4:
-                            is_logged_in = False  
+                            login_date = datetime(2023, 10, 3)
+                            is_logged_in = False
 
                 if settings_button_rect.collidepoint(event.pos):
-                    current_bg_image_path = show_settings(screen,current_bg_image_path)  
+                    current_bg_image_path = show_settings(screen,current_bg_image_path)
+                    music_on, current_theme_index, volume, login_date = load_preferences()
                     bg_image = pygame.image.load(current_bg_image_path).convert()
                     bg_image = pygame.transform.scale(bg_image, (WIDTH, HEIGHT))
 
@@ -174,13 +188,14 @@ while running:
 
             if error_message:
                 draw_text(screen, error_message, 20, RED, WIDTH // 2, HEIGHT // 2 + 115, center=True)
-
     else:
         screen.blit(logo_image, (WIDTH // 2 - 250, HEIGHT // 2 - 250))
         for i, button in enumerate(buttons):
             pygame.draw.rect(screen, button_colors[i], button)
             draw_text(screen, button_labels[i], 24, WHITE, button.centerx, button.centery, center=True)
+
     pygame.display.flip()
 
+save_preferences(music_on, current_theme_index, volume, login_date)
 pygame.quit()
 sys.exit()
