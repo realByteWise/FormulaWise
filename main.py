@@ -5,6 +5,7 @@ from buy_tickets import buy_tickets
 from heatmaps import heatmaps
 from race_positions import show_positions
 from settings import show_settings
+from datetime import timedelta
 
 
 pygame.init()
@@ -21,7 +22,6 @@ logo_image = pygame.transform.scale(logo_image, (logo_width, logo_height))
 settings_button_image = pygame.image.load("assets/settings.png")
 settings_button_rect = settings_button_image.get_rect(center=(260, 900))
 settings_button_image = pygame.transform.scale(settings_button_image, (50, 50))
-font = pygame.font.Font(pygame.font.match_font('Palatino'), 24)
 input_width, input_height = 300, 40
 button_width, button_height = 150, 50
 pygame.init()
@@ -118,6 +118,7 @@ while running:
                         login_button = pygame.Rect(WIDTH // 2 - 75, HEIGHT // 2 + 60, 150, 50)
                 elif settings_button_rect.collidepoint(event.pos):
                     current_bg_image_path = show_settings(screen,current_bg_image_path)
+                    music_on, current_theme_index, volume, login_date = load_preferences()
                     bg_image = pygame.image.load(current_bg_image_path).convert()
                     bg_image = pygame.transform.scale(bg_image, (WIDTH, HEIGHT))
             elif event.type == pygame.KEYDOWN:
@@ -158,10 +159,11 @@ while running:
                     bg_image = pygame.image.load(current_bg_image_path).convert()
                     bg_image = pygame.transform.scale(bg_image, (WIDTH, HEIGHT))
 
-    screen.blit(bg_image, (0, 0))
-    screen.blit(settings_button_image, settings_button_rect.topleft)
+    draw_image(screen, bg_image, 0, 0)
+    draw_image(screen, logo_image, WIDTH // 2, 160, center=True)
+    draw_image(screen, settings_button_image, 35, 675, center=True)
+    draw_text(screen, "Settings", 24, WHITE, 35, 710, center=True)
     if not is_logged_in:
-        screen.blit(logo_image, (WIDTH // 2 - 250, HEIGHT // 2 - 250))
         pygame.draw.rect(screen, LIGHT_GRAY, username_box)
         pygame.draw.rect(screen, LIGHT_GRAY, password_box)
         pygame.draw.rect(screen, RED, signup_button)
@@ -189,7 +191,6 @@ while running:
             if error_message:
                 draw_text(screen, error_message, 20, RED, WIDTH // 2, HEIGHT // 2 + 115, center=True)
     else:
-        screen.blit(logo_image, (WIDTH // 2 - 250, HEIGHT // 2 - 250))
         for i, button in enumerate(buttons):
             pygame.draw.rect(screen, button_colors[i], button)
             draw_text(screen, button_labels[i], 24, WHITE, button.centerx, button.centery, center=True)
