@@ -1,15 +1,45 @@
 import sys
 import matplotlib as mpl
 import numpy as np
+import fastf1.plotting
 from resources import *
 from matplotlib import pyplot as plt
 from matplotlib.collections import LineCollection
 
 
+def plot_heatmap(driver, year, week):
+    global error_message
+    fastf1.plotting.setup_mpl(mpl_timedelta_support=False, misc_mpl_mods=False, color_scheme='fastf1')
+    try:
+        session = ff1.get_session(year, week, 'R')
+        session.load(weather=False, messages=False)
+        lap = session.laps.pick_drivers(driver).pick_fastest()
+        x = lap.telemetry['X']
+        y = lap.telemetry['Y']
+        color = lap.telemetry['Speed']
+        points = np.array([x, y]).T.reshape(-1, 1, 2)
+        segments = np.concatenate([points[:-1], points[1:]], axis=1)
+        fig, ax = plt.subplots(figsize=(12, 6.75))
+        fig.suptitle(f'{session.event.name} {year} - {driver} - Speed', size=24, y=0.97)
+        ax.axis('off')
+        ax.plot(lap.telemetry['X'], lap.telemetry['Y'], color='black', linestyle='-', linewidth=16, zorder=0)
+        norm = plt.Normalize(color.min(), color.max())
+        lc = LineCollection(segments, cmap=mpl.cm.plasma, norm=norm, linestyle='-', linewidth=5)
+        lc.set_array(color)
+        ax.add_collection(lc)
+        cbaxes = fig.add_axes([0.25, 0.05, 0.5, 0.05])
+        normlegend = mpl.colors.Normalize(vmin=color.min(), vmax=color.max())
+        mpl.colorbar.ColorbarBase(cbaxes, norm=normlegend, cmap=mpl.cm.plasma, orientation="horizontal")
+        plt.show()
+    except Exception as e:
+        print(f"Error: {e}")  # Debugging
+        error_message = "Error fetching data. Please try again."
+        return False
+    return True
+
 def heatmaps(screen,current_bg_image_path):
-    global driver_text, year_text, week_text, active_box, error_message
-    bg_image_path = current_bg_image_path
-    bg_image = pygame.image.load(bg_image_path).convert()
+    global error_message
+    bg_image = pygame.image.load(current_bg_image_path).convert()
     bg_image = pygame.transform.scale(bg_image, (WIDTH, HEIGHT))
     logo_image = pygame.image.load(logo_image_path)
     logo_image = pygame.transform.scale(logo_image, (logo_width, logo_height))
@@ -68,9 +98,9 @@ def heatmaps(screen,current_bg_image_path):
                     else:
                         week_text += event.unicode
 
-        screen.blit(bg_image, (0, 0))
-        screen.blit(logo_image, (WIDTH // 2 - logo_image.get_width() // 2, 20))
-        draw_text(screen, "Heatmaps", 100, WHITE, 460, logo_image.get_height() + 10, center=False)
+        draw_image(screen, bg_image, 0, 0)
+        draw_image(screen, logo_image, WIDTH // 2, logo_image.get_height() - 30, center=True)
+        draw_text(screen, "Heatmaps", 80, WHITE, WIDTH // 2, logo_image.get_height() + 40, center=True)
 
         pygame.draw.rect(screen, LIGHT_GRAY, driver_box)
         pygame.draw.rect(screen, LIGHT_GRAY, year_box)
@@ -92,30 +122,3 @@ def heatmaps(screen,current_bg_image_path):
             draw_text(screen,error_message, 20, RED, WIDTH // 2, HEIGHT // 2 + 200, center=True)
 
         pygame.display.flip()
-
-def plot_heatmap(driver, year, week):
-    try:
-        session = ff1.get_session(year, week, 'R')
-        session.load()
-        lap = session.laps.pick_drivers(driver).pick_fastest()
-        x = lap.telemetry['X']
-        y = lap.telemetry['Y']
-        color = lap.telemetry['Speed']
-        points = np.array([x, y]).T.reshape(-1, 1, 2)
-        segments = np.concatenate([points[:-1], points[1:]], axis=1)
-        fig, ax = plt.subplots(figsize=(12, 6.75))
-        fig.suptitle(f'{session.event.name} {year} - {driver} - Speed', size=24, y=0.97)
-        ax.axis('off')
-        ax.plot(lap.telemetry['X'], lap.telemetry['Y'], color='black', linestyle='-', linewidth=16, zorder=0)
-        norm = plt.Normalize(color.min(), color.max())
-        lc = LineCollection(segments, cmap=mpl.cm.plasma, norm=norm, linestyle='-', linewidth=5)
-        lc.set_array(color)
-        ax.add_collection(lc)
-        cbaxes = fig.add_axes([0.25, 0.05, 0.5, 0.05])
-        normlegend = mpl.colors.Normalize(vmin=color.min(), vmax=color.max())
-        mpl.colorbar.ColorbarBase(cbaxes, norm=normlegend, cmap=mpl.cm.plasma, orientation="horizontal")
-        plt.show()
-    except Exception as e:
-        print(f"Error: {e}")  # Debugging
-        return False
-    return True
