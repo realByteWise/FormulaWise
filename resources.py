@@ -2,7 +2,7 @@ import pygame
 import os
 import fastf1 as ff1
 from time import sleep
-from datetime import datetime, timedelta
+from datetime import datetime
 from dateutil import parser
 
 
@@ -47,20 +47,18 @@ logo_height = 100
 logo_image_path = "assets/fwise.png"
 
 RED = (255, 0, 0)
+BLUE = (0, 0, 255)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GRAY = (200, 200, 200)
 LIGHT_GRAY = (211, 211, 211)
-GOLD = (255, 215, 0)
-SILVER = (128, 128, 128)
-BRONZE = (205, 127, 50)
 
 gp_info_2025 = {
-    'Australian Grand Prix': (datetime(2025, 3, 16), "assets/maps/australian-gp.png", "https://tickets.formula1.com/en/f1-3159-australia?_gl=1*1nu3ilq*_up*MQ..*_gs*MQ..&gclid=CjwKCAiAgoq7BhBxEiwAVcW0LOWPx0O_wrn_lEDtiJtCYXxbMiJ8jdXDXZlrKPPBzaSuaq-ttZz2kRoCAxkQAvD_BwE"),
+    'Australian Grand Prix': (datetime(2025, 3, 16), "assets/maps/australian-gp.jpg", "https://tickets.formula1.com/en/f1-3159-australia?_gl=1*1nu3ilq*_up*MQ..*_gs*MQ..&gclid=CjwKCAiAgoq7BhBxEiwAVcW0LOWPx0O_wrn_lEDtiJtCYXxbMiJ8jdXDXZlrKPPBzaSuaq-ttZz2kRoCAxkQAvD_BwE"),
     'Chinese Grand Prix': (datetime(2025, 3, 23), "assets/maps/chinese-gp.jpg", "https://tickets.formula1.com/en/f1-3182-china?_gl=1*wg4daf*_up*MQ..*_gs*MQ..&gclid=CjwKCAiAgoq7BhBxEiwAVcW0LOWPx0O_wrn_lEDtiJtCYXxbMiJ8jdXDXZlrKPPBzaSuaq-ttZz2kRoCAxkQAvD_BwE"),
     'Japanese Grand Prix': (datetime(2025, 4, 6), "assets/maps/japanese-gp.jpg", "https://tickets.formula1.com/en/f1-3309-japan?_gl=1*198wqvz*_up*MQ..*_gs*MQ..&gclid=CjwKCAiAgoq7BhBxEiwAVcW0LOWPx0O_wrn_lEDtiJtCYXxbMiJ8jdXDXZlrKPPBzaSuaq-ttZz2kRoCAxkQAvD_BwE"),
     'Bahrain Grand Prix': (datetime(2025, 4, 13), "assets/maps/bahrain-gp.jpg", "https://tickets.formula1.com/en/f1-3176-bahrain?_gl=1*198wqvz*_up*MQ..*_gs*MQ..&gclid=CjwKCAiAgoq7BhBxEiwAVcW0LOWPx0O_wrn_lEDtiJtCYXxbMiJ8jdXDXZlrKPPBzaSuaq-ttZz2kRoCAxkQAvD_BwE"),
-    'Saudi Arabian Grand Prix': (datetime(2025, 4, 20), "assets/maps/saudi-gp.jpeg", "https://tickets.formula1.com/en/f1-54298-saudi-arabia?_gl=1*198wqvz*_up*MQ..*_gs*MQ..&gclid=CjwKCAiAgoq7BhBxEiwAVcW0LOWPx0O_wrn_lEDtiJtCYXxbMiJ8jdXDXZlrKPPBzaSuaq-ttZz2kRoCAxkQAvD_BwE"),
+    'Saudi Arabian Grand Prix': (datetime(2025, 4, 20), "assets/maps/saudi-gp.jpg", "https://tickets.formula1.com/en/f1-54298-saudi-arabia?_gl=1*198wqvz*_up*MQ..*_gs*MQ..&gclid=CjwKCAiAgoq7BhBxEiwAVcW0LOWPx0O_wrn_lEDtiJtCYXxbMiJ8jdXDXZlrKPPBzaSuaq-ttZz2kRoCAxkQAvD_BwE"),
     'Miami Grand Prix': (datetime(2025, 5, 4), "assets/maps/miami-gp.jpg", "https://tickets.formula1.com/en/f1-54987-miami?_gl=1*1sp5is4*_up*MQ..*_gs*MQ..&gclid=CjwKCAiAgoq7BhBxEiwAVcW0LOWPx0O_wrn_lEDtiJtCYXxbMiJ8jdXDXZlrKPPBzaSuaq-ttZz2kRoCAxkQAvD_BwE"),
     'Emilia Romagna Grand Prix': (datetime(2025, 5, 18), "assets/maps/imola-gp.jpg", "https://tickets.formula1.com/en/f1-53107-imola?_gl=1*1sp5is4*_up*MQ..*_gs*MQ..&gclid=CjwKCAiAgoq7BhBxEiwAVcW0LOWPx0O_wrn_lEDtiJtCYXxbMiJ8jdXDXZlrKPPBzaSuaq-ttZz2kRoCAxkQAvD_BwE"),
     'Monaco Grand Prix': (datetime(2025, 5, 25), "assets/maps/monaco-gp.jpg", "https://tickets.formula1.com/en/f1-3202-monaco?_gl=1*hfdszw*_up*MQ..*_gs*MQ..&gclid=CjwKCAiAgoq7BhBxEiwAVcW0LOWPx0O_wrn_lEDtiJtCYXxbMiJ8jdXDXZlrKPPBzaSuaq-ttZz2kRoCAxkQAvD_BwE"),
@@ -75,7 +73,7 @@ gp_info_2025 = {
     'Azerbaijan Grand Prix': (datetime(2025, 9, 21), "assets/maps/baku-gp.jpg", "https://tickets.formula1.com/en/f1-10851-azerbaijan?_gl=1*2qtm43*_up*MQ..*_gs*MQ..&gclid=CjwKCAiAgoq7BhBxEiwAVcW0LOWPx0O_wrn_lEDtiJtCYXxbMiJ8jdXDXZlrKPPBzaSuaq-ttZz2kRoCAxkQAvD_BwE"),
     'Singapore Grand Prix': (datetime(2025, 10, 5), "assets/maps/singapore-gp.jpg", "https://tickets.formula1.com/en/f1-3301-singapore?_gl=1*1plqlbf*_up*MQ..*_gs*MQ..&gclid=CjwKCAiAgoq7BhBxEiwAVcW0LOWPx0O_wrn_lEDtiJtCYXxbMiJ8jdXDXZlrKPPBzaSuaq-ttZz2kRoCAxkQAvD_BwE"),
     'United States Grand Prix': (datetime(2025, 10, 19), "assets/maps/austin-gp.jpg", "https://tickets.formula1.com/en/f1-3320-united-states?_gl=1*1plqlbf*_up*MQ..*_gs*MQ..&gclid=CjwKCAiAgoq7BhBxEiwAVcW0LOWPx0O_wrn_lEDtiJtCYXxbMiJ8jdXDXZlrKPPBzaSuaq-ttZz2kRoCAxkQAvD_BwE"),
-    'Mexico City Grand Prix': (datetime(2025, 10, 26), "assets/maps/mexico-gp.jpg", "https://tickets.formula1.com/en/f1-4861-mexico?_gl=1*1plqlbf*_up*MQ..*_gs*MQ..&gclid=CjwKCAiAgoq7BhBxEiwAVcW0LOWPx0O_wrn_lEDtiJtCYXxbMiJ8jdXDXZlrKPPBzaSuaq-ttZz2kRoCAxkQAvD_BwE"),
+    'Mexico City Grand Prix': (datetime(2025, 10, 26), "assets/maps/mexican-gp.jpg", "https://tickets.formula1.com/en/f1-4861-mexico?_gl=1*1plqlbf*_up*MQ..*_gs*MQ..&gclid=CjwKCAiAgoq7BhBxEiwAVcW0LOWPx0O_wrn_lEDtiJtCYXxbMiJ8jdXDXZlrKPPBzaSuaq-ttZz2kRoCAxkQAvD_BwE"),
     'São Paulo Grand Prix': (datetime(2025, 11, 9), "assets/maps/brazilian-gp.jpg", "https://tickets.formula1.com/en/f1-3325-brazil?_gl=1*1plqlbf*_up*MQ..*_gs*MQ..&gclid=CjwKCAiAgoq7BhBxEiwAVcW0LOWPx0O_wrn_lEDtiJtCYXxbMiJ8jdXDXZlrKPPBzaSuaq-ttZz2kRoCAxkQAvD_BwE"),
     'Las Vegas Grand Prix': (datetime(2025, 11, 22), "assets/maps/las-vegas-gp.jpg", "https://tickets.formula1.com/en/f1-59007-las-vegas?_gl=1*1ct9pq4*_up*MQ..*_gs*MQ..&gclid=CjwKCAiAgoq7BhBxEiwAVcW0LOWPx0O_wrn_lEDtiJtCYXxbMiJ8jdXDXZlrKPPBzaSuaq-ttZz2kRoCAxkQAvD_BwE"),
     'Qatar Grand Prix': (datetime(2025, 11, 30), "assets/maps/qatar-gp.jpg", "https://tickets.formula1.com/en/f1-56257-qatar?_gl=1*1ct9pq4*_up*MQ..*_gs*MQ..&gclid=CjwKCAiAgoq7BhBxEiwAVcW0LOWPx0O_wrn_lEDtiJtCYXxbMiJ8jdXDXZlrKPPBzaSuaq-ttZz2kRoCAxkQAvD_BwE"),
@@ -92,7 +90,7 @@ themes = [
 
 # Functions
 def draw_text(screen, text, size, color, x, y, center=False):
-    font = pygame.font.Font(None, size)
+    font = pygame.font.Font(pygame.font.match_font('Palatino'), size)
     text_surface = font.render(text, True, color)
     text_rect = text_surface.get_rect()
     if center:
@@ -100,6 +98,14 @@ def draw_text(screen, text, size, color, x, y, center=False):
     else:
         text_rect.topleft = (x, y)
     screen.blit(text_surface, text_rect)
+
+def draw_image(screen, image, x, y, center=False):
+    image_rect = image.get_rect()
+    if center:
+        image_rect.center = (x, y)
+    else:
+        image_rect.topleft = (x, y)
+    screen.blit(image, image_rect)
 
 def load_credentials() -> dict:
     credentials = {}
