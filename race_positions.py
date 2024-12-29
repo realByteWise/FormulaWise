@@ -1,5 +1,4 @@
 import sys
-import pygame
 import pygame_widgets
 from resources import *
 from pygame_widgets.button import Button
@@ -8,8 +7,41 @@ import matplotlib.pyplot as plt
 import fastf1.plotting
 
 
+def plot_positions():
+    global error_message
+    gp = positions_dropdown.getSelected()
+    fastf1.plotting.setup_mpl(mpl_timedelta_support=False, misc_mpl_mods=False, color_scheme='fastf1')
+    if gp is not None:
+        try:
+            session = ff1.get_session(int(year_text), gp, 'R')
+            session.load(telemetry=False, weather=False, messages=False)
+            fig, ax = plt.subplots(figsize=(8.0, 4.9))
+
+            for drv in session.drivers:
+                try:
+                    drv_laps = session.laps.pick_drivers(drv)
+                    abb = drv_laps['Driver'].iloc[0]
+                    style = fastf1.plotting.get_driver_style(identifier=abb, style=['color', 'linestyle'], session=session)
+                    ax.plot(drv_laps['LapNumber'], drv_laps['Position'], label=abb, **style)
+                except Exception:
+                    continue
+
+            ax.set_ylim([20.5, 0.5])
+            ax.set_yticks([1, 5, 10, 15, 20])
+            ax.set_xlabel('Lap')
+            ax.set_ylabel('Position')
+            ax.legend(bbox_to_anchor=(1.0, 1.02))
+            plt.tight_layout()
+            plt.show()
+            error_message = "Please check the loaded window for the map."
+        except Exception as e:
+            error_message = "Error fetching data. Please try again."
+            print(f"Error: {e}")  # Debugging
+    else:
+        error_message = "Please select a GP."
+
 def show_positions(screen, current_bg_image_path):
-    global year_text, active_box, error_message, positions_dropdown, view_positions_button
+    global year_text, positions_dropdown, error_message
     logo_image = pygame.image.load(logo_image_path)
     logo_image = pygame.transform.scale(logo_image, (logo_width, logo_height))
     bg_image_path = current_bg_image_path
@@ -46,6 +78,7 @@ def show_positions(screen, current_bg_image_path):
                             if countries[0] == "Pre-Season Testing":
                                 countries.remove("Pre-Season Testing")
                             dropdown_visible = True
+                            error_message = ""
 
                             positions_dropdown = Dropdown(
                                 screen, 685, 20, 550, 27, name='Select Grand Prix',
@@ -55,20 +88,20 @@ def show_positions(screen, current_bg_image_path):
                             )
 
                             view_positions_button = Button(
-                                screen, 890, 200, 150, 50, text='View Positions',
+                                screen, 885, 200, 150, 50, text='View Results',
                                 margin=20, inactiveColour=(255, 0, 0), pressedColour=(0, 255, 0),
                                 radius=5, font=pygame.font.SysFont(pygame.font.match_font('Palatino'), 25),
                                 textVAlign='center', onClick=plot_positions
                             )
                         except Exception:
                             error_message = "Error fetching data. Please try again."
+                    else:
+                        error_message = "Please enter a year."
 
                 elif return_button.collidepoint(event.pos):
                     positions_dropdown = None
                     view_positions_button = None
                     return
-                else:
-                    error_message = "Please enter a year."
 
             if event.type == pygame.KEYDOWN:
                 if active_box == "year":
@@ -77,11 +110,11 @@ def show_positions(screen, current_bg_image_path):
                     else:
                         year_text += event.unicode
 
-        screen.blit(bg_image, (0, 0))
+        draw_image(screen, bg_image, 0, 0)
 
         if not dropdown_visible:
-            screen.blit(logo_image, (WIDTH // 2 - logo_image.get_width() // 2, 20))
-            draw_text(screen, "Race Results", 100, WHITE, 400, logo_image.get_height() + 10, center=False)
+            draw_image(screen, logo_image, WIDTH // 2, logo_image.get_height() - 30, center=True)
+            draw_text(screen, "Race Results", 80, WHITE, WIDTH // 2, logo_image.get_height() + 40, center=True)
             pygame.draw.rect(screen, RED, return_button)
             draw_text(screen, "Return to Menu", 24, WHITE, return_button.centerx, return_button.centery, center=True)
             pygame.draw.rect(screen, LIGHT_GRAY, year_box)
@@ -91,10 +124,10 @@ def show_positions(screen, current_bg_image_path):
             draw_text(screen, year_text, 24, BLACK, year_box.centerx, year_box.centery, center=True)
 
             if error_message:
-                draw_text(screen, error_message, 20, RED, WIDTH // 2, HEIGHT // 2 + 100, center=True)
+                draw_text(screen, error_message, 20, RED, WIDTH // 2, submit_button.centery - 40, center=True)
         else:
-            screen.blit(logo_image, (70, 20))
-            draw_text(screen, "Race Results", 100, WHITE, 75, logo_image.get_height() + 10, center=False)
+            draw_image(screen, logo_image, WIDTH // 4, logo_image.get_height() - 30, center=True)
+            draw_text(screen, "Race Results", 80, WHITE, WIDTH // 4, logo_image.get_height() + 40, center=True)
             description_lines = [
                 "This feature allows you to select a previous Grand Prix of the year entered.",
                 "You can view the standings of the race along with the podium finishers.",
@@ -110,11 +143,14 @@ def show_positions(screen, current_bg_image_path):
             description_start_y = logo_image.get_height() + 100
 
             for i, line in enumerate(description_lines):
-                draw_text(screen, line, 24, WHITE, 20, description_start_y + i * 30, center=False)
+                draw_text(screen, line, 24, WHITE, 45, description_start_y + i * 30)
 
-            return_button = pygame.Rect(230, 550, 150, 50)
+            return_button = pygame.Rect(245, 550, 150, 50)
             pygame.draw.rect(screen, RED, return_button)
             draw_text(screen, "Return to Menu", 24, WHITE, return_button.centerx, return_button.centery, center=True)
+
+            if error_message:
+                draw_text(screen, error_message, 30, RED, int(WIDTH * (3 / 4)), 170, center=True)
 
             for event in events:
                 if event.type == pygame.QUIT:
@@ -132,31 +168,3 @@ def show_positions(screen, current_bg_image_path):
 
     positions_dropdown = None
     view_positions_button = None
-
-def plot_positions():
-    fastf1.plotting.setup_mpl(mpl_timedelta_support=False, misc_mpl_mods=False, color_scheme='fastf1')
-    try:
-        session = ff1.get_session(int(year_text), positions_dropdown.getSelected(), 'R')
-        session.load(telemetry=False, weather=False)
-
-        fig, ax = plt.subplots(figsize=(8.0, 4.9))
-        for drv in session.drivers:
-            try:
-                drv_laps = session.laps.pick_drivers(drv)
-
-                abb = drv_laps['Driver'].iloc[0]
-                style = fastf1.plotting.get_driver_style(identifier=abb, style=['color', 'linestyle'], session=session)
-
-                ax.plot(drv_laps['LapNumber'], drv_laps['Position'], label=abb, **style)
-            except Exception:
-                continue
-
-        ax.set_ylim([20.5, 0.5])
-        ax.set_yticks([1, 5, 10, 15, 20])
-        ax.set_xlabel('Lap')
-        ax.set_ylabel('Position')
-        ax.legend(bbox_to_anchor=(1.0, 1.02))
-        plt.tight_layout()
-        plt.show()
-    except Exception as e:
-        print(f"Error: {e}")  # Debugging
