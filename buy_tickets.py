@@ -1,4 +1,5 @@
 import sys
+import pygame.transform
 import pygame_widgets
 import webbrowser
 from resources import *
@@ -12,6 +13,7 @@ def redirect():
     try:
         link = gp_info_2025[tickets_dropdown.getSelected()][2]
         webbrowser.open(link)
+        error_message = "Please check redirected window."
     except Exception:
         error_message = "Please select a GP"
 
@@ -19,8 +21,7 @@ def buy_tickets(screen, current_bg_image_path):
     global error_message, tickets_dropdown
     logo_image = pygame.image.load(logo_image_path)
     logo_image = pygame.transform.scale(logo_image, (logo_width, logo_height))
-    bg_image_path = current_bg_image_path
-    bg_image = pygame.image.load(bg_image_path).convert()
+    bg_image = pygame.image.load(current_bg_image_path).convert()
     bg_image = pygame.transform.scale(bg_image, (WIDTH, HEIGHT))
 
     error_message = ""
@@ -37,7 +38,7 @@ def buy_tickets(screen, current_bg_image_path):
     )
 
     buy_tickets_button = Button(
-        screen, 890, 200, 150, 50, text='Buy Tickets',
+        screen, 885, 100, 150, 50, text='Buy Tickets',
         margin=20, inactiveColour=(255, 0, 0), pressedColour=(0, 255, 0),
         radius=5, font=pygame.font.SysFont(pygame.font.match_font('Palatino'), 25),
         textVAlign='centre', onClick=redirect
@@ -45,9 +46,9 @@ def buy_tickets(screen, current_bg_image_path):
 
     while running:
         events = pygame.event.get()
-        screen.blit(bg_image, (0, 0))
-        screen.blit(logo_image, (70, 20))
-        draw_text(screen, "Buy Tickets", 100, WHITE, 110, logo_image.get_height() + 10, center=False)
+        draw_image(screen, bg_image, 0, 0)
+        draw_image(screen, logo_image, WIDTH // 4, logo_image.get_height() - 30, center=True)
+        draw_text(screen, "Buy Tickets", 80, WHITE, WIDTH // 4, logo_image.get_height() + 40, center=True)
 
         description_lines = [
             "This feature allows you to select a previous Grand Prix of the year entered.",
@@ -64,14 +65,24 @@ def buy_tickets(screen, current_bg_image_path):
         description_start_y = logo_image.get_height() + 100
 
         for i, line in enumerate(description_lines):
-            draw_text(screen, line, 24, WHITE, 20, description_start_y + i * 30, center=False)
+            draw_text(screen, line, 24, WHITE, 45, description_start_y + i * 30, center=False)
 
-        return_button = pygame.Rect(230, 550, 150, 50)
+        return_button = pygame.Rect(245, 550, 150, 50)
         pygame.draw.rect(screen, RED, return_button)
         draw_text(screen, "Return to Menu", 24, WHITE, return_button.centerx, return_button.centery, center=True)
 
+        gp = tickets_dropdown.getSelected()
+        if gp is not None:
+            if error_message != "Please check redirected window.":
+                error_message = ""
+            map_image = pygame.image.load(gp_info_2025[gp][1])
+            map_image = pygame.transform.scale(map_image, (500, 500))
+            draw_image(screen, map_image, int(WIDTH * (3 / 4)), 438, center=True)
+        else:
+            draw_text(screen, "[ MAP ]", 80, WHITE, int(WIDTH * (3 / 4)), 438, center=True)
+
         if error_message:
-            draw_text(screen, error_message, 20, RED, WIDTH // 2, HEIGHT // 2 + 100, center=True)
+            draw_text(screen, error_message, 30, RED, int(WIDTH * (3 / 4)), 75, center=True)
 
         for event in events:
             if event.type == pygame.QUIT:
@@ -81,7 +92,7 @@ def buy_tickets(screen, current_bg_image_path):
                 if return_button.collidepoint(event.pos):
                     tickets_dropdown = None
                     buy_tickets_button = None
-                    return  # Go back to the previous menu
+                    return
 
         pygame_widgets.update(events)
         pygame.display.flip()
