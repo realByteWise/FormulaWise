@@ -1,21 +1,18 @@
 import sys
-import pygame.transform
 import pygame_widgets
 import webbrowser
 from resources import *
-from pygame_widgets.button import Button
 from pygame_widgets.dropdown import Dropdown
 
 
 def redirect():
     global error_message
-    error_message = ""
     try:
         link = gp_info_2025[tickets_dropdown.getSelected()][2]
         webbrowser.open(link)
-        error_message = "Please check redirected window."
     except Exception:
         error_message = "Please select a GP"
+    error_message = "Please check redirected window."
 
 def buy_tickets(screen, current_bg_image_path):
     global error_message, tickets_dropdown
@@ -23,29 +20,34 @@ def buy_tickets(screen, current_bg_image_path):
     logo_image = pygame.transform.scale(logo_image, (logo_width, logo_height))
     bg_image = pygame.image.load(current_bg_image_path).convert()
     bg_image = pygame.transform.scale(bg_image, (WIDTH, HEIGHT))
+    return_button = pygame.Rect(245, 550, 150, 50)
+    buy_tickets_button = pygame.Rect(885, 100, 150, 50)
 
     error_message = ""
-    tickets_dropdown = None
     running = True
     today = datetime.today()
     countries = [location for location, details in gp_info_2025.items() if today <= details[0]]
 
     tickets_dropdown = Dropdown(
         screen, 685, 20, 550, 27, name='Select Grand Prix',
-        choices=countries, fontSize=25, borderRadius=5,
-        colour=pygame.Color('gray'), values=countries, direction='down',
-        textHAlign='centre', textColor=pygame.Color('Red')
-    )
-
-    buy_tickets_button = Button(
-        screen, 885, 100, 150, 50, text='Buy Tickets',
-        margin=20, inactiveColour=(255, 0, 0), pressedColour=(0, 255, 0),
-        radius=5, font=pygame.font.SysFont(pygame.font.match_font('Palatino'), 25),
-        textVAlign='centre', onClick=redirect
+        choices=countries, fontSize=25, borderRadius=5, textHAlign='centre',
+        colour=pygame.Color('gray'), values=countries, direction='down'
     )
 
     while running:
         events = pygame.event.get()
+        for event in events:
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if buy_tickets_button.collidepoint(event.pos):
+                    redirect()
+                if return_button.collidepoint(event.pos):
+                    tickets_dropdown.toggleDropped() if tickets_dropdown.isDropped() else ...
+                    tickets_dropdown.hide()
+                    return
+
         draw_image(screen, bg_image, 0, 0)
         draw_image(screen, logo_image, WIDTH // 4, logo_image.get_height() - 30, center=True)
         draw_text(screen, "Buy Tickets", 80, WHITE, WIDTH // 4, logo_image.get_height() + 40, center=True)
@@ -67,9 +69,10 @@ def buy_tickets(screen, current_bg_image_path):
         for i, line in enumerate(description_lines):
             draw_text(screen, line, 24, WHITE, 45, description_start_y + i * 30, center=False)
 
-        return_button = pygame.Rect(245, 550, 150, 50)
         pygame.draw.rect(screen, RED, return_button)
+        pygame.draw.rect(screen, RED, buy_tickets_button)
         draw_text(screen, "Return to Menu", 24, WHITE, return_button.centerx, return_button.centery, center=True)
+        draw_text(screen, "Buy Tickets", 24, WHITE, buy_tickets_button.centerx, buy_tickets_button.centery, center=True)
 
         gp = tickets_dropdown.getSelected()
         if gp is not None:
@@ -84,18 +87,5 @@ def buy_tickets(screen, current_bg_image_path):
         if error_message:
             draw_text(screen, error_message, 30, RED, int(WIDTH * (3 / 4)), 75, center=True)
 
-        for event in events:
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            elif event.type == pygame.MOUSEBUTTONDOWN and event.pos:
-                if return_button.collidepoint(event.pos):
-                    tickets_dropdown = None
-                    buy_tickets_button = None
-                    return
-
         pygame_widgets.update(events)
         pygame.display.flip()
-
-    tickets_dropdown = None
-    buy_tickets_button = None
