@@ -47,6 +47,7 @@ logo_height = 100
 logo_image_path = "assets/fwise.png"
 
 RED = (255, 0, 0)
+GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
@@ -89,22 +90,20 @@ themes = [
 ]
 
 # Functions
-def draw_text(screen, text, size, color, x, y, center=False):
+def draw_text(screen, text, size, color, x, y, center=False) -> None:
     font = pygame.font.Font(pygame.font.match_font('Palatino'), size)
     text_surface = font.render(text, True, color)
-    text_rect = text_surface.get_rect()
     if center:
-        text_rect.center = (x, y)
+        text_rect = text_surface.get_rect(center=(x, y))
     else:
-        text_rect.topleft = (x, y)
+        text_rect = text_surface.get_rect(topleft=(x, y))
     screen.blit(text_surface, text_rect)
 
-def draw_image(screen, image, x, y, center=False):
-    image_rect = image.get_rect()
+def draw_image(screen, image, x, y, center=False) -> None:
     if center:
-        image_rect.center = (x, y)
+        image_rect = image.get_rect(center=(x, y))
     else:
-        image_rect.topleft = (x, y)
+        image_rect = image.get_rect(topleft=(x, y))
     screen.blit(image, image_rect)
 
 def load_credentials() -> dict:
@@ -124,7 +123,7 @@ def load_credentials() -> dict:
         print("LOG: Credentials file not found.")
     return credentials
 
-def save_credentials(username: str, password: str):
+def save_credentials(username: str, password: str) -> None:
     with open("credentials.txt", "a") as file:
         file.write(f"{username}:{password}\n")
 
@@ -145,7 +144,7 @@ def load_preferences() -> tuple[bool, int, float, datetime]:
         print("LOG: Preferences file not found.")
     return music_on, theme, volume, login_date
 
-def save_preferences(music_on: bool, theme: int, volume: float, login_date: datetime):
+def save_preferences(music_on: bool, theme: int, volume: float, login_date: datetime) -> None:
     with open("preferences.txt", "w") as file:
         file.write(f"{music_on},{theme},{volume},{login_date.year}-{login_date.month}-{login_date.day}")
 
