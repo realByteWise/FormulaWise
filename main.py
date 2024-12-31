@@ -3,7 +3,7 @@ from resources import *
 from view_maps import view_maps
 from buy_tickets import buy_tickets
 from heatmaps import heatmaps
-from race_positions import show_positions
+from race_results import show_positions
 from settings import show_settings
 from datetime import timedelta
 
@@ -26,10 +26,9 @@ input_width, input_height = 300, 40
 button_width, button_height = 150, 50
 pygame.init()
 pygame.mixer.init()
-if music_on:
-    pygame.mixer.music.load(themes[current_theme_index][0])
-    pygame.mixer.music.play(-1)
-    pygame.mixer.music.set_volume(volume)
+pygame.mixer.music.load(themes[current_theme_index][0])
+pygame.mixer.music.play(-1)
+pygame.mixer.music.set_volume(volume)
 
 username_text = ""
 password_text = ""
@@ -60,7 +59,7 @@ buttons = [
     pygame.Rect(WIDTH // 2 - button_width // 2, HEIGHT // 2 + 150, button_width, button_height)
 ]
 button_colors = [GRAY, GRAY, GRAY, GRAY, RED]
-button_labels = ["VIEW MAPS", "BUY TICKETS", "HEATMAPS", "RESULTS", "SIGN OUT"]
+button_labels = ["VIEW MAPS", "BUY TICKETS", "HEATMAPS", "RACE RESULTS", "SIGN OUT"]
 
 running = True
 while running:
