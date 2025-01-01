@@ -45,7 +45,7 @@ def heatmaps(screen,current_bg_image_path):
     input_width, input_height = 300, 40
     year_box = pygame.Rect(int(WIDTH * (3 / 4)) - input_width // 2, 30, input_width, input_height)
     submit_button = pygame.Rect(885, 270, 150, 50)
-    return_button = pygame.Rect(245, 550, 150, 50)
+    return_button = pygame.Rect(245, 600, 150, 50)
     return_prev_button = pygame.Rect(855, 340, 210, 50)
 
     year_text = ""
@@ -71,18 +71,21 @@ def heatmaps(screen,current_bg_image_path):
                         if stage == 1:
                             try:
                                 session = ff1.get_event_schedule(int(year_text))
-                                countries = session["EventName"].tolist()
+                                events = session["EventName"].tolist()
 
-                                if countries[0] == "Pre-Season Testing":
-                                    countries.remove("Pre-Season Testing")
+                                if int(year_text) > 2019:
+                                    countries = [i for i in events if "pre-season" not in i.lower()]
+                                else:
+                                    countries = events
+
                                 error_message = ""
+                                stage = 2
 
                                 gp_dropdown = Dropdown(
                                     screen, 685, 90, 550, 25, name='Select Grand Prix',
                                     choices=countries, fontSize=25, borderRadius=5, textHAlign='centre',
                                     colour=pygame.Color('gray'), values=countries, direction='down'
                                 )
-                                stage = 2
                             except Exception:
                                 error_message = "Please enter a valid year."
 
@@ -142,28 +145,37 @@ def heatmaps(screen,current_bg_image_path):
         draw_text(screen, "Heatmaps", 80, WHITE, WIDTH // 4, logo_image.get_height() + 40, center=True)
 
         description_lines = [
-            "This feature allows you to select a previous Grand Prix of the year entered.",
-            "You can view the standings of the race along with the podium finishers.",
-            "Simply enter the desired year and click submit to see the available races.",
+            "Welcome to the Heatmaps page. This feature lets you view a heatmap of a",
+            "driver in a Grand Prix in of a year entered. A heatmap is a color-based",
+            "speed graph, which means a color on a part of the map depending on the",
+            "speed at which the driver was driving.",
+            " ",
+            "There is also a legend on the bottom of the graph, showing a certain color",
+            "for that speed. In short: Blue means slower, Yellow means faster.",
+            " ",
+            "Enter the desired year and click 'Load' to see the available races.",
             "Select a Grand Prix from the dropdown menu to view detailed results.",
-            "The standings will include driver positions, points earned, and team information.",
-            "Explore historical data to analyze past performances and trends.",
-            "This feature is perfect for fans wanting to revisit memorable races.",
-            "Stay updated with the latest statistics and records from previous seasons.",
-            "Easily navigate through different years to find your favorite races.",
-            "Feature implementation date: 19/12/2024."
+            " ",
+            "Explore historical data to analyze past performances and trends. This",
+            "feature is perfect for fans wanting to revisit memorable races.",
+            " ",
+            "NOTE: It may take ~30 to 45 seconds for data to load if not saved in cache."
         ]
-        description_start_y = logo_image.get_height() + 100
+        current_height = 200
 
         for i, line in enumerate(description_lines):
-            draw_text(screen, line, 24, WHITE, 45, description_start_y + i * 30, center=False)
+            if line == " ":
+                current_height += 15
+            else:
+                draw_text(screen, line, 24, WHITE if i != 14 else RED, 45, current_height, center=False)
+                current_height += 30
 
         pygame.draw.rect(screen, RED, return_button)
         draw_text(screen, "Return to Menu", 24, WHITE, return_button.centerx, return_button.centery, center=True)
         pygame.draw.rect(screen, RED, submit_button)
 
         if stage == 3:
-            draw_text(screen, "Submit", 24, WHITE, submit_button.centerx, submit_button.centery, center=True)
+            draw_text(screen, "View Heatmap", 24, WHITE, submit_button.centerx, submit_button.centery, center=True)
             pygame.draw.rect(screen, RED, return_prev_button)
             draw_text(screen, "Return to Previous Menu", 24, WHITE, return_prev_button.centerx, return_prev_button.centery, center=True)
         else:
