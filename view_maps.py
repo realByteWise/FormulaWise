@@ -57,7 +57,7 @@ def view_maps(screen, current_bg_image_path):
     input_width, input_height = 300, 40
     year_box = pygame.Rect(int(WIDTH * (3 / 4)) - input_width // 2, 30, input_width, input_height)
     submit_button = pygame.Rect(885, 270, 150, 50)
-    return_button = pygame.Rect(245, 550, 150, 50)
+    return_button = pygame.Rect(245, 600, 150, 50)
 
     year_text = ""
     active_box = None
@@ -80,10 +80,13 @@ def view_maps(screen, current_bg_image_path):
                         if not dropdown_visible:
                             try:
                                 session = ff1.get_event_schedule(int(year_text))
-                                countries = session["EventName"].tolist()
+                                events = session["EventName"].tolist()
 
-                                if countries[0]=="Pre-Season Testing":
-                                    countries.remove("Pre-Season Testing")
+                                if int(year_text) > 2019:
+                                    countries = [i for i in events if "pre-season" not in i.lower()]
+                                else:
+                                    countries = events
+
                                 dropdown_visible = True
                                 error_message = ""
 
@@ -125,21 +128,26 @@ def view_maps(screen, current_bg_image_path):
         draw_text(screen, year_text, 24, BLACK, year_box.centerx, year_box.centery, center=True)
 
         description_lines = [
-            "This feature allows you to select a Grand Prix of the year entered. Here,",
-            "you can view the standings of the race along with the podium finishers.",
-            "Simply enter the desired year and click submit to see the available races.",
-            "Select a Grand Prix from the dropdown menu to view detailed results.",
-            "The standings will include driver positions, points earned, and team information.",
-            "Explore historical data to analyze past performances and trends.",
-            "This feature is perfect for fans wanting to revisit memorable races.",
-            "Stay updated with the latest statistics and records from previous seasons.",
-            "Easily navigate through different years to find your favorite races.",
-            "Feature implementation date: 19/12/2024."
+            "Welcome to the View Maps page. As the name suggests, you can view the map",
+            "of a race track of a certain year. But that's not all. This is an interactable feature,",
+            "which means you can move around on the map.",
+            " ",
+            "The map includes numbered corners which are different for each track.",
+            " ",
+            "Enter the desired year and click 'Load' to get a list of available races.",
+            "Select a Grand Prix from the dropdown menu and click 'View Map'.",
+            " ",
+            "NOTE: It may take ~30 to 45 seconds for the map to load.We'll try to make",
+            "this faster in the future :)"
         ]
-        description_start_y = logo_image.get_height() + 100
+        current_height = 250
 
         for i, line in enumerate(description_lines):
-            draw_text(screen, line, 24, WHITE, 45, description_start_y + i * 30)
+            if line == " ":
+                current_height += 15
+            else:
+                draw_text(screen, line, 24, WHITE if i < 9 else RED, 45, current_height, center=False)
+                current_height += 30
 
         if not dropdown_visible:
             draw_text(screen, "Load", 24, WHITE, submit_button.centerx, submit_button.centery, center=True)
