@@ -19,7 +19,7 @@ def plot_positions():
                 abb = drv_laps['Driver'].iloc[0]
                 style = fastf1.plotting.get_driver_style(identifier=abb, style=['color', 'linestyle'], session=session)
                 ax.plot(drv_laps['LapNumber'], drv_laps['Position'], label=abb, **style)
-            except Exception:
+            except IndexError:
                 continue
 
         ax.set_ylim([20.5, 0.5])
@@ -29,7 +29,7 @@ def plot_positions():
         ax.legend(bbox_to_anchor=(1.0, 1.02))
         plt.tight_layout()
         plt.show()
-    except Exception as e:
+    except (ValueError, IndexError) as e:
         print(f"Error: {e}")  # Debugging
         return "Error fetching data. Please try again."
     return "Please check the loaded window for the data."
@@ -40,25 +40,24 @@ def show_positions(screen, current_bg_image_path):
     logo_image = pygame.transform.scale(logo_image, (logo_width, logo_height))
     bg_image = pygame.image.load(current_bg_image_path).convert()
     bg_image = pygame.transform.scale(bg_image, (WIDTH, HEIGHT))
-    input_width, input_height = 300, 40
     year_box = pygame.Rect(int(WIDTH * (3 / 4)) - input_width // 2, 30, input_width, input_height)
-    submit_button = pygame.Rect(885, 270, 150, 50)
-    return_button = pygame.Rect(245, 600, 150, 50)
+    submit_button = pygame.Rect(885, 270, button_width, button_height)
+    return_button = pygame.Rect(245, 600, button_width, button_height)
 
     year_text = ""
-    active_box = None
     error_message = ""
+    active_box = None
     dropdown_visible = False
     positions_dropdown = None
-    running = True
 
+    running = True
     while running:
         events = pygame.event.get()
         for event in events:
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            if event.type == pygame.MOUSEBUTTONDOWN:
+            elif event.type == pygame.MOUSEBUTTONDOWN:
                 if year_box.collidepoint(event.pos) and not dropdown_visible:
                     active_box = "year"
                 elif submit_button.collidepoint(event.pos):
@@ -81,7 +80,7 @@ def show_positions(screen, current_bg_image_path):
                                     choices=countries, fontSize=25, borderRadius=5, textHAlign='centre',
                                     colour=pygame.Color('gray'), values=countries, direction='down'
                                 )
-                            except Exception:
+                            except ValueError:
                                 error_message = "Please enter a valid year."
                         elif dropdown_visible and positions_dropdown:
                             if positions_dropdown.getSelected() is not None:
@@ -97,7 +96,7 @@ def show_positions(screen, current_bg_image_path):
                         positions_dropdown.hide()
                     return
 
-            if event.type == pygame.KEYDOWN:
+            elif event.type == pygame.KEYDOWN:
                 if active_box == "year":
                     if event.key == pygame.K_BACKSPACE:
                         year_text = year_text[:-1]
@@ -107,9 +106,9 @@ def show_positions(screen, current_bg_image_path):
         draw_image(screen, bg_image, 0, 0)
         draw_image(screen, logo_image, WIDTH // 4, logo_image.get_height() - 30, center=True)
         draw_text(screen, "Race Results", 80, WHITE, WIDTH // 4, logo_image.get_height() + 40, center=True)
-        pygame.draw.rect(screen, RED, return_button)
-        pygame.draw.rect(screen, LIGHT_GRAY, year_box)
-        pygame.draw.rect(screen, RED, submit_button)
+        pygame.draw.rect(screen, RED, return_button, border_radius=5)
+        pygame.draw.rect(screen, LIGHT_GRAY, year_box, border_radius=5)
+        pygame.draw.rect(screen, RED, submit_button, border_radius=5)
         draw_text(screen, "Return to Menu", 24, WHITE, return_button.centerx, return_button.centery, center=True)
         draw_text(screen, "Year", 24, WHITE, year_box.centerx, year_box.centery - 35, center=True)
         draw_text(screen, year_text, 24, BLACK, year_box.centerx, year_box.centery, center=True)
@@ -139,11 +138,8 @@ def show_positions(screen, current_bg_image_path):
                 draw_text(screen, line, 24, WHITE if i != 13 else RED, 45, current_height, center=False)
                 current_height += 30
 
-        if not dropdown_visible:
-            draw_text(screen, "Load", 24, WHITE, submit_button.centerx, submit_button.centery, center=True)
-        else:
-            pygame.draw.rect(screen, RED, submit_button)
-            draw_text(screen, "View Results", 24, WHITE, submit_button.centerx, submit_button.centery, center=True)
+        draw_text(screen, "Load" if not dropdown_visible else "View Results", 24, WHITE, submit_button.centerx,
+                  submit_button.centery, center=True)
 
         if error_message:
             draw_text(screen, error_message, 30, RED, int(WIDTH * (3 / 4)), 240, center=True)
