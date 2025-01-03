@@ -22,6 +22,7 @@ else:
 if permission:
     ff1.Cache.enable_cache("cache")
 
+# creating credentials file if it doesn't exist
 try:
     with open("credentials.txt", "x"):
         pass
@@ -30,20 +31,25 @@ except FileExistsError:
 else:
     print("LOG: credentials.txt successfully created.")
 
+# creating preferences file if it doesn't exist
 try:
     open("preferences.txt", "x")
     with open("preferences.txt", "w") as file:
-        file.write(f"True,0,1.0,2023-10-03")  # ByteWise founding
+        file.write("True,0,1.0,2023-10-03,1:1")  # default preferences
 except FileExistsError:
     pass
 else:
     print("LOG: preferences.txt successfully created.")
 
-# Variables
+# variables
 WIDTH = 1280
 HEIGHT = 720
 logo_width = 500
 logo_height = 100
+button_width = 150
+button_height = 50
+input_width = 300
+input_height = 40
 logo_image_path = "assets/fwise.png"
 
 RED = (255, 0, 0)
@@ -89,7 +95,39 @@ themes = [
     ('assets/music/lifeforce.mp3', 'assets/bgs/lifeforce.jpg')
 ]
 
-# Functions
+special_keys = (pygame.K_ESCAPE, pygame.K_DELETE, pygame.K_TAB, pygame.K_CAPSLOCK,
+                pygame.K_KP_ENTER, pygame.K_LSHIFT, pygame.K_RSHIFT, pygame.K_LCTRL,
+                pygame.K_LALT, pygame.K_RALT, pygame.K_RCTRL, pygame.K_UP, pygame.K_DOWN,
+                pygame.K_LEFT, pygame.K_RIGHT, pygame.K_HOME, pygame.K_END, pygame.K_PAGEUP,
+                pygame.K_PAGEDOWN, pygame.K_NUMLOCK, pygame.K_NUMLOCKCLEAR, pygame.K_KP_ENTER,
+                pygame.K_RETURN, pygame.K_PRINTSCREEN, pygame.K_F1, pygame.K_F2, pygame.K_F3,
+                pygame.K_F4, pygame.K_F5, pygame.K_F6, pygame.K_F7, pygame.K_F8, pygame.K_F9,
+                pygame.K_F10, pygame.K_F11, pygame.K_F12, pygame.K_F13, pygame.K_F14, pygame.K_F15)
+
+# functions
+class Button:
+    def __init__(self, x, y, image, width, height):
+        self.image = pygame.transform.scale(image, (width, height))
+        self.rect = self.image.get_rect()
+        self.rect.topleft = (x, y)
+        self.clicked = False
+
+    def draw(self, screen):
+        action = False
+        pos = pygame.mouse.get_pos()
+
+        if self.rect.collidepoint(pos):
+            if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False:
+                self.clicked = True
+                action = True
+
+        if pygame.mouse.get_pressed()[0] == 0:
+            self.clicked = False
+
+        screen.blit(self.image, (self.rect.x, self.rect.y))
+
+        return action
+
 def draw_text(screen, text, size, color, x, y, center=False) -> None:
     font = pygame.font.Font(pygame.font.match_font('Palatino'), size)
     text_surface = font.render(text, True, color)
@@ -127,26 +165,51 @@ def save_credentials(username: str, password: str) -> None:
     with open("credentials.txt", "a") as file:
         file.write(f"{username}:{password}\n")
 
-def load_preferences() -> tuple[bool, int, float, datetime]:
+def edit_credentials(old_user: str, password: str, new_user: str | None = None) -> None:
+    credentials = {}
+    with open("credentials.txt", "r") as read:
+        for line in read.readlines():
+            line = line.strip()
+            if line:
+                parts = line.split(":")
+                if len(parts) == 2:
+                    if old_user != parts[0]:
+                        credentials[parts[0]] = parts[1]
+                    else:
+                        if new_user:
+                            credentials[new_user] = password
+                        else:
+                            credentials[old_user] = password
+                else:
+                    print(f"LOG: Skipping malformed line: {line}")
+    with open("credentials.txt", "w") as write:
+        for username, password in credentials.items():
+            write.write(f"{username}:{password}\n")
+
+def load_preferences() -> tuple[bool, int, float, datetime, tuple[str, ...]]:
     try:
         with open("preferences.txt", "r") as file:
             line = file.readline().strip()
             if line:
                 parts = line.split(",")
-                if len(parts) == 4:
+                if len(parts) == 5:
                     music_on = bool(parts[0])
                     theme = int(parts[1])
                     volume = float(parts[2])
                     login_date = parser.parse(parts[3])
+                    details = tuple(parts[4].split(":"))
                 else:
                     print(f"LOG: Skipping malformed line: {line}")
     except FileNotFoundError:
         print("LOG: Preferences file not found.")
-    return music_on, theme, volume, login_date
+    return music_on, theme, volume, login_date, details
 
-def save_preferences(music_on: bool, theme: int, volume: float, login_date: datetime) -> None:
+def save_preferences(music_on: bool, theme: int, volume: float, login_date: datetime, details: tuple[str, ...]) -> None:
     with open("preferences.txt", "w") as file:
-        file.write(f"{music_on},{theme},{volume},{login_date.year}-{login_date.month}-{login_date.day}")
+        if details:
+            file.write(f"{music_on},{theme},{volume},{login_date.year}-{login_date.month}-{login_date.day},{details[0]}:{details[1]}")
+        else:
+            file.write(f"{music_on},{theme},{volume},{login_date.year}-{login_date.month}-{login_date.day},1:1")
 
 def password_validator(password: str) -> tuple[bool, str]:
     if len(password) >= 8:
@@ -162,10 +225,78 @@ def password_validator(password: str) -> tuple[bool, str]:
             elif char == ":": colon = True
             else: special = True
         if colon:
-            return False, "Password cant contain ':'"
+            return False, "Password can't contain ':'"
         elif lower and upper and digit and special:
             return True, ""
         else:
             return False, "Password must contain an uppercase character, a lowercase character, a digit and a special character."
     else:
         return False, "Password should be at least 8 characters long."
+
+def username_validator(username: str) -> tuple[bool, str]:
+    if 6 <= len(username) <= 30:
+        letter = False
+        invalid = False
+        for char in username:
+            if char.isalpha(): letter = True
+            elif char.isdigit(): continue
+            elif char == ".": continue
+            elif char == "_": continue
+            else: invalid = True
+        if invalid:
+            return False, "Username can only use letters, numbers, underscores and periods."
+        if not letter:
+            return False, "Usernames must contain at least one letter"
+        else:
+            return True, ""
+    else:
+        return False, "Username should be 6-30 characters long."
+
+def show_credits():
+    print("""
+FormulaWise © 2025 by ByteWise (Gleon DSouza & Johan Jose) is licensed under Attribution
+-NonCommercial-NoDerivatives 4.0 International.
+To view a copy of this license, visit https://creativecommons.org/licenses/by-nc-nd/4.0/
+
+FormulaWise is an independent application dedicated to providing statistics and insights about
+Formula 1. However, it is not affiliated with, endorsed by, or associated with Formula 1, the
+Fédération Internationale de l'Automobile (FIA), Formula One Management (FOM), or any related entities.
+
+All trademarks, logos, and intellectual property related to Formula 1 are the property of their
+respective owners. FormulaWise uses publicly available information to present data and insights
+for educational and informational purposes only.
+The official website can be found at https://formula1.com.
+
+Other company and product names mentioned herein are trademarks of their respective companies.
+
+Many thanks to the developers of the following Python libraries used in this program:
+
+    fastf1
+    pygame
+    pygame_widgets
+    matplotlib
+    numpy
+    datetime
+    dateutil
+    and many more...
+
+Special thanks to the developers of the fastf1 Python library, which has been used in this program.
+All Formula 1 Grand Prix data has been acquired from this library, and only converted to a
+graphical form for easy viewing. This project would be impossible without fastf1. Certain parts of
+the code have been reused.
+This code along with the documentation can be found at https://docs.fastf1.dev
+
+THE DATA IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+Many thanks to the developers of pygame_widgets. Certain parts of the code have been reused.
+This code along with the documentation can be found at https://pygamewidgets.readthedocs.io/en/stable/
+
+Thank you to all those who have, directly or indirectly, lent a helping hand in the successful
+completion of this project, with deepest gratitude to Mrs. Maheswari for her valuable guidance,
+comments and suggestions. 
+""")
