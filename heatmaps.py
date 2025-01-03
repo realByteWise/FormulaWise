@@ -42,20 +42,19 @@ def heatmaps(screen,current_bg_image_path):
     bg_image = pygame.transform.scale(bg_image, (WIDTH, HEIGHT))
     logo_image = pygame.image.load(logo_image_path)
     logo_image = pygame.transform.scale(logo_image, (logo_width, logo_height))
-    input_width, input_height = 300, 40
     year_box = pygame.Rect(int(WIDTH * (3 / 4)) - input_width // 2, 30, input_width, input_height)
-    submit_button = pygame.Rect(885, 270, 150, 50)
-    return_button = pygame.Rect(245, 600, 150, 50)
-    return_prev_button = pygame.Rect(855, 340, 210, 50)
+    submit_button = pygame.Rect(885, 270, button_width, button_height)
+    return_button = pygame.Rect(245, 600, button_width, button_height)
+    return_prev_button = pygame.Rect(855, 340, 210, button_height)
 
     year_text = ""
-    active_box = None
     error_message = ""
-    stage = 1
+    active_box = None
     gp_dropdown = None
     drivers_dropdown = None
-    running = True
+    stage = 1
 
+    running = True
     while running:
         events = pygame.event.get()
         for event in events:
@@ -86,7 +85,7 @@ def heatmaps(screen,current_bg_image_path):
                                     choices=countries, fontSize=25, borderRadius=5, textHAlign='centre',
                                     colour=pygame.Color('gray'), values=countries, direction='down'
                                 )
-                            except Exception:
+                            except ValueError:
                                 error_message = "Please enter a valid year."
 
                         elif stage == 2 and gp_dropdown:
@@ -106,7 +105,7 @@ def heatmaps(screen,current_bg_image_path):
                                         choices=drivers, fontSize=25, borderRadius=5, textHAlign='centre',
                                         colour=pygame.Color('gray'), values=drivers, direction='down'
                                     )
-                                except Exception:
+                                except ValueError:
                                     error_message = "Error fetching data. Please try again."
                             else:
                                 error_message = "Please select a Grand Prix."
@@ -170,22 +169,19 @@ def heatmaps(screen,current_bg_image_path):
                 draw_text(screen, line, 24, WHITE if i != 14 else RED, 45, current_height, center=False)
                 current_height += 30
 
-        pygame.draw.rect(screen, RED, return_button)
+        pygame.draw.rect(screen, RED, return_button, border_radius=5)
+        pygame.draw.rect(screen, RED, submit_button, border_radius=5)
         draw_text(screen, "Return to Menu", 24, WHITE, return_button.centerx, return_button.centery, center=True)
-        pygame.draw.rect(screen, RED, submit_button)
 
         if stage == 3:
+            pygame.draw.rect(screen, RED, return_prev_button, border_radius=5)
             draw_text(screen, "View Heatmap", 24, WHITE, submit_button.centerx, submit_button.centery, center=True)
-            pygame.draw.rect(screen, RED, return_prev_button)
             draw_text(screen, "Return to Previous Menu", 24, WHITE, return_prev_button.centerx, return_prev_button.centery, center=True)
         else:
-            pygame.draw.rect(screen, LIGHT_GRAY, year_box)
+            pygame.draw.rect(screen, LIGHT_GRAY, year_box, border_radius=5)
             draw_text(screen, "Year", 24, WHITE, year_box.centerx, year_box.centery - 30, center=True)
             draw_text(screen, year_text, 24, BLACK, year_box.centerx, year_box.centery, center=True)
-            if stage == 1:
-                draw_text(screen, "Load", 24, WHITE, submit_button.centerx, submit_button.centery, center=True)
-            elif stage == 2:
-                draw_text(screen, "Submit", 24, WHITE, submit_button.centerx, submit_button.centery, center=True)
+            draw_text(screen, "Load" if stage == 1 else "Submit", 24, WHITE, submit_button.centerx, submit_button.centery, center=True)
 
         if error_message:
             draw_text(screen,error_message, 30, RED, int(WIDTH * (3 / 4)), 240, center=True)
