@@ -9,7 +9,7 @@ def redirect():
     try:
         link = gp_info_2025[tickets_dropdown.getSelected()][2]
         webbrowser.open(link)
-    except Exception:
+    except (KeyError, TypeError):
         return "Please select a GP"
     return "Please check redirected window."
 
@@ -19,8 +19,8 @@ def buy_tickets(screen, current_bg_image_path):
     logo_image = pygame.transform.scale(logo_image, (logo_width, logo_height))
     bg_image = pygame.image.load(current_bg_image_path).convert()
     bg_image = pygame.transform.scale(bg_image, (WIDTH, HEIGHT))
-    return_button = pygame.Rect(245, 600, 150, 50)
-    buy_tickets_button = pygame.Rect(885, 100, 150, 50)
+    return_button = pygame.Rect(245, 600, button_width, button_height)
+    buy_tickets_button = pygame.Rect(885, 100, button_width, button_height)
 
     error_message = ""
     running = True
@@ -39,10 +39,10 @@ def buy_tickets(screen, current_bg_image_path):
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            if event.type == pygame.MOUSEBUTTONDOWN:
+            elif event.type == pygame.MOUSEBUTTONDOWN:
                 if buy_tickets_button.collidepoint(event.pos):
                     error_message = redirect()
-                if return_button.collidepoint(event.pos):
+                elif return_button.collidepoint(event.pos):
                     tickets_dropdown.toggleDropped() if tickets_dropdown.isDropped() else ...
                     tickets_dropdown.hide()
                     return
@@ -73,8 +73,8 @@ def buy_tickets(screen, current_bg_image_path):
                 draw_text(screen, line, 24, WHITE, 45, current_height, center=False)
                 current_height += 30
 
-        pygame.draw.rect(screen, RED, return_button)
-        pygame.draw.rect(screen, RED, buy_tickets_button)
+        pygame.draw.rect(screen, RED, return_button, border_radius=5)
+        pygame.draw.rect(screen, RED, buy_tickets_button, border_radius=5)
         draw_text(screen, "Return to Menu", 24, WHITE, return_button.centerx, return_button.centery, center=True)
         draw_text(screen, "Buy Tickets", 24, WHITE, buy_tickets_button.centerx, buy_tickets_button.centery, center=True)
 
