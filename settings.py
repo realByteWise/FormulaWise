@@ -10,7 +10,7 @@ def play_current_track(current_theme_index, music_on):
         pygame.mixer.music.pause()
 
 def show_settings(screen, current_bg_image_path):
-    global bg_image, login_date, details, return_button_rect
+    global bg_image, return_button_rect
     music_on, current_theme_index, volume, login_date, details = load_preferences()
     bg_image = pygame.image.load(themes[current_theme_index][1]).convert()
     bg_image = pygame.transform.scale(bg_image, (WIDTH, HEIGHT))
@@ -54,6 +54,8 @@ def show_settings(screen, current_bg_image_path):
                     elif edit_profile_button_rect.collidepoint(event.pos):
                         save_preferences(music_on, current_theme_index, volume, login_date, (username_text, password_text))
                         edit_profile(screen)
+                        music_on, current_theme_index, volume, login_date, details = load_preferences()
+                        username_text, password_text = details[0], details[1]
                     elif return_button_rect.collidepoint(event.pos):
                         running = False
 
@@ -94,7 +96,7 @@ def show_settings(screen, current_bg_image_path):
     return current_bg_image_path
 
 def edit_profile(screen):
-    global bg_image, login_date, details, return_button_rect
+    global bg_image, return_button_rect
 
     show_password_image = pygame.image.load("assets/show_password.jpg").convert()
     hide_password_image = pygame.image.load("assets/hide_password.jpg").convert()
@@ -106,7 +108,8 @@ def edit_profile(screen):
     edit_password_box = pygame.Rect(WIDTH // 2 + 170, 285, 200, input_height)
     cancel_button_username = pygame.Rect(1030, 215, 200, input_height)
     cancel_button_password = pygame.Rect(WIDTH // 2 + 170, 355, 200, input_height)
-
+    
+    music_on, current_theme_index, volume, login_date, details = load_preferences()
     username_text, password_text = details[0], details[1]
     old_username, old_password = details[0], details[1]
     confirm_password_text, hidden_confirm_password = "", ""
@@ -147,6 +150,7 @@ def edit_profile(screen):
                                     valid_user = username_validator(username_text)
                                     if valid_user[0]:
                                         edit_credentials(old_username, password_text, username_text)
+                                        save_preferences(music_on, current_theme_index, volume, login_date, (username_text, password_text))
                                         edit_username = False
                                         error_message = "New username successfully saved."
                                     else:
@@ -168,7 +172,9 @@ def edit_profile(screen):
                                         valid_pass = password_validator(password_text)
                                         if valid_pass[0]:
                                             edit_credentials(old_username, password_text)
+                                            save_preferences(music_on, current_theme_index, volume, login_date, (username_text, password_text))
                                             edit_password = False
+                                            confirm_password_text, hidden_confirm_password = "", ""
                                             error_message = "New password successfully saved."
                                         else:
                                             error_message = valid_pass[1]
@@ -273,3 +279,4 @@ def edit_profile(screen):
             draw_text(screen, "Not Logged in.", 200, WHITE, WIDTH // 2, HEIGHT // 2 - 100, center=True)
 
         pygame.display.flip()
+
