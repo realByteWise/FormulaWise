@@ -212,26 +212,24 @@ def save_preferences(music_on: bool, theme: int, volume: float, login_date: date
             file.write(f"{music_on},{theme},{volume},{login_date.year}-{login_date.month}-{login_date.day},1:1")
 
 def password_validator(password: str) -> tuple[bool, str]:
-    if len(password) >= 8:
-        lower = False
-        upper = False
+    if len(password) >= 6:
+        letter = False
         digit = False
         special = False
         colon = False
         for char in password:
-            if char.islower(): lower = True
-            elif char.isupper(): upper = True
+            if char.isalpha(): letter = True
             elif char.isdigit(): digit = True
             elif char == ":": colon = True
             else: special = True
         if colon:
             return False, "Password can't contain ':'"
-        elif lower and upper and digit and special:
+        elif letter and digit and special:
             return True, ""
         else:
-            return False, "Password must contain an uppercase character, a lowercase character, a digit and a special character."
+            return False, "Password must contain a letter, a digit and a special character."
     else:
-        return False, "Password should be at least 8 characters long."
+        return False, "Password should be at least 6 characters long."
 
 def username_validator(username: str) -> tuple[bool, str]:
     if 6 <= len(username) <= 30:
@@ -300,3 +298,4 @@ Thank you to all those who have, directly or indirectly, lent a helping hand in 
 completion of this project, with deepest gratitude to Mrs. Maheswari for her valuable guidance,
 comments and suggestions. 
 """)
+
